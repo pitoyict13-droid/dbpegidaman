@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Aplikasi Kepegawaian &amp; Persuratan — SMP Unggulan Idaman Banjarbaru</title>
+<style>
+    body { font-family: "Segoe UI", Arial, sans-serif; color: #222; margin: 0; background: #f4f6fb; }
+    .page { max-width: 820px; margin: 0 auto; background: #fff; padding: 40px 52px; }
+    .kop { text-align: center; border-bottom: 4px double #0d6efd; padding-bottom: 16px; margin-bottom: 24px; }
+    .kop img { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; box-shadow: 0 3px 12px rgba(0,0,0,.2); }
+    .kop h1 { margin: 10px 0 2px; font-size: 22px; color: #0d3b8c; }
+    .kop h2 { margin: 0; font-size: 16px; font-weight: 600; color: #555; }
+    h3.bagian { background: #0d6efd; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 17px; margin: 34px 0 14px; }
+    h4 { color: #0d3b8c; border-left: 5px solid #0d6efd; padding-left: 10px; margin: 24px 0 8px; font-size: 15px; }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 13.5px; }
+    th { background: #e8eefc; text-align: left; }
+    th, td { border: 1px solid #b9c6de; padding: 6px 10px; vertical-align: top; }
+    code { background: #eef2f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    pre { background: #1e293b; color: #d7e3ff; padding: 12px 16px; border-radius: 8px; overflow-x: auto; font-size: 12.5px; }
+    pre code { background: none; color: inherit; padding: 0; }
+    .alert { border-left: 5px solid #dc3545; background: #fdf0f0; padding: 10px 14px; border-radius: 6px; margin: 10px 0; font-size: 13.5px; }
+    .alert.biru { border-left-color: #0d6efd; background: #eef4ff; }
+    .alert.hijau { border-left-color: #198754; background: #eefaf3; }
+    ul, ol { margin: 6px 0 12px; padding-left: 24px; font-size: 13.5px; line-height: 1.65; }
+    p { font-size: 13.5px; line-height: 1.65; }
+    .ttd { margin-top: 40px; text-align: center; width: 320px; float: right; }
+    .ttd .sp { height: 64px; }
+    footer { clear: both; text-align: center; color: #777; font-size: 12px; border-top: 1px solid #ddd; margin-top: 40px; padding-top: 12px; }
+    @media print {
+        body { background: #fff; }
+        .page { padding: 0; }
+        h3.bagian { background: #0d6efd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4; margin: 18mm 16mm; }
+        .no-print { display: none; }
+    }
+    .no-print { text-align: center; padding: 12px; background: #0d6efd; color: #fff; }
+    .no-print button { background: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; color: #0d6efd; margin: 0 4px; }
+</style>
+</head>
+<body>
+<div class="no-print">
+    <button onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+</div>
+<div class="page">
+
+<div class="kop">
+    <img src="http://localhost:8080/image/logoPendidikan.png" onerror="this.src='image/logoPendidikan.png'" alt="Logo">
+    <h1>SMP UNGGULAN IDAMAN BANJARBARU</h1>
+    <h2>Panduan Aplikasi Sistem Informasi Kepegawaian &amp; Persuratan</h2>
+</div>
+
+<h3 class="bagian">BAGIAN A — PANDUAN INSTALASI</h3>
+
+<h4>A.1 Persyaratan</h4>
+<table>
+    <tr><th>Kebutuhan</th><th>Keterangan</th></tr>
+    <tr><td>Komputer</td><td>Windows 10/11 (juga bisa Linux/Mac)</td></tr>
+    <tr><td>Java</td><td>JDK 17 ke atas (sudah terpasang bersama Android Studio, atau unduh di adoptium.net)</td></tr>
+    <tr><td>Database</td><td>PostgreSQL 16 (unduh di postgresql.org)</td></tr>
+    <tr><td>Browser</td><td>Chrome / Edge / Firefox versi terbaru</td></tr>
+    <tr><td>Jaringan</td><td>Server dan HP/klien dalam satu jaringan (WiFi/LAN sekolah)</td></tr>
+</table>
+
+<h4>A.2 Menyiapkan Database PostgreSQL</h4>
+<ol>
+    <li>Pastikan PostgreSQL berjalan (layanan <code>postgresql-x64-16</code> berstatus <i>Running</i>).</li>
+    <li>Buka <b>pgAdmin</b>, buat database baru dengan perintah: <code>CREATE DATABASE kepegawaian_smp;</code></li>
+    <li>Kredensial bawaan aplikasi: Host <code>localhost</code>, Port <code>5432</code>, user <code>postgres</code>, password <code>postgres</code>.</li>
+    <li>Jika password sekolah berbeda, ubah di file <code>src/main/resources/application.yml</code> bagian <code>spring.datasource.password</code>.</li>
+</ol>
+<div class="alert biru">ℹ️ Tabel database <b>dibuat otomatis</b> saat aplikasi pertama dijalankan — tidak perlu buat tabel manual.</div>
+
+<h4>A.3 Menjalankan Aplikasi</h4>
+<ol>
+    <li>Salin folder project <code>kepegawaian-smp</code> ke komputer server sekolah.</li>
+    <li>Buka PowerShell / Command Prompt, masuk ke folder project: <code>cd kepegawaian-smp</code></li>
+    <li>Jalankan perintah berikut:</li>
+</ol>
+<pre><code>set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr
+.\mvnw.cmd spring-boot:run</code></pre>
+<ol start="4">
+    <li>Tunggu hingga muncul: <code>Tomcat started on port 8080</code></li>
+    <li>Buka browser ke <b>http://localhost:8080</b></li>
+    <li>Untuk berhenti: tekan <code>Ctrl + C</code> atau tutup jendela PowerShell.</li>
+</ol>
+
+<h4>Agar otomatis jalan setiap komputer menyala (opsional)</h4>
+<p>Buat file <code>JALANKAN-APLIKASI.bat</code> di Desktop berisi:</p>
+<pre><code>@echo off
+cd /d C:\lokasi\kepegawaian-smp
+set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr
+call .\mvnw.cmd spring-boot:run
+pause</code></pre>
+
+<h4>A.4 Akses dari HP / Komputer Lain</h4>
+<ol>
+    <li>Di server, ketik <code>ipconfig</code> di PowerShell — catat <b>IPv4 Address</b> (contoh <code>192.168.1.10</code>).</li>
+    <li>Buka port 8080 di firewall: <b>Windows Security → Firewall → Advanced settings → Inbound Rules → New Rule → Port → TCP 8080 → Allow</b>.</li>
+    <li>Dari HP/komputer lain (satu WiFi): buka <code>http://192.168.1.10:8080</code></li>
+</ol>
+<div class="alert hijau">📱 <b>Install di HP Android:</b> buka alamat aplikasi di Chrome → menu ⋮ → <b>Tambahkan ke layar utama</b>. Aplikasi muncul dengan ikon sendiri.</div>
+
+<h4>A.5 Login Pertama Kali</h4>
+<table>
+    <tr><th>Username</th><th>Password</th></tr>
+    <tr><td><code>admin</code></td><td><code>admin123</code></td></tr>
+</table>
+<div class="alert">🚨 <b>WAJIB segera ganti password bawaan!</b> Password default yang dibiarkan membuka risiko data sekolah diubah orang lain.</div>
+
+<h3 class="bagian">BAGIAN B — PANDUAN PENGGUNAAN</h3>
+
+<h4>B.1 Peran Pengguna</h4>
+<table>
+    <tr><th>Peran</th><th>Hak Akses</th></tr>
+    <tr><td><b>ADMIN</b></td><td>Mengelola semua data: pegawai, pengguna, surat, disposisi, laporan</td></tr>
+    <tr><td><b>STAFF</b></td><td>Hanya <b>melihat</b> data + mengelola disposisi miliknya sendiri</td></tr>
+</table>
+
+<h4>B.2 Login &amp; Keluar</h4>
+<p>Isi username &amp; password → klik <b>Masuk</b>. Setelah selesai bekerja, klik <b>Keluar</b> di kanan atas (token login langsung dicabut).</p>
+
+<h4>B.3 Ganti Password</h4>
+<p>Menu <b>🔑 Ganti Password</b> → isi password lama, password baru (min. 6 karakter), konfirmasi → <b>Simpan</b>.</p>
+
+<h4>B.4 Kelola Pengguna (ADMIN)</h4>
+<p>Menu <b>Pengguna</b> → <b>Tambah Pengguna</b>: username, password, peran (ADMIN/STAFF), dan <b>Nama Lengkap</b>.</p>
+<div class="alert">⚠️ <b>Nama Lengkap harus sama persis dengan nama pegawai</b> di Data Pegawai — nama inilah yang mencocokkan disposisi surat ke pemiliknya.</div>
+
+<h4>B.5 Dashboard</h4>
+<p>Ringkasan otomatis: total pegawai, guru &amp; pimpinan, tenaga kependidikan, pegawai tetap, arsip surat masuk &amp; keluar, plus grafik sebaran status dan jabatan.</p>
+
+<h4>B.6 Data Pegawai</h4>
+<ul>
+    <li><b>Tambah</b>: tombol <b>+ Tambah</b> → isi NIP (boleh kosong), nama, jenis kelamin, <b>Status Kepegawaian</b> (Pegawai Tetap / Pegawai Tidak Tetap), jabatan, mapel, pendidikan, tanggal, kontak, gaji, alamat → Simpan.</li>
+    <li><b>Cari</b>: ketik nama di kotak pencarian. <b>Ubah/Hapus</b>: tombol ✏️ / 🗑 pada baris.</li>
+</ul>
+<p><b>Import Excel (massal):</b></p>
+<ol>
+    <li>Klik <b>Template</b> → unduh <code>template-pegawai.xlsx</code>.</li>
+    <li>Isi data mulai baris ke-3. Kolom wajib: Nama, Jabatan, Status Kepegawaian. Format tanggal <code>yyyy-MM-dd</code>.</li>
+    <li>Klik <b>Import Excel</b> → pilih file → <b>Unggah</b>.</li>
+    <li>Sistem melaporkan berhasil/gagal per baris; data gagal diperbaiki lalu diunggah ulang — <b>tidak ada data ganda</b> (NIP unik).</li>
+</ol>
+
+<h4>B.7 Surat Masuk 📩</h4>
+<p>Menu <b>Surat Masuk</b> → <b>Catat Surat Masuk</b>:</p>
+<table>
+    <tr><th>Kolom</th><th>Keterangan</th></tr>
+    <tr><td>Nomor Surat</td><td>Nomor di kop surat pengirim, mis. <code>421.2/123/DISDIK/2026</code></td></tr>
+    <tr><td>Klasifikasi</td><td>Kode arsip Srikandi: UM, PT, SN, KP, UN, PG, PU, dst. (17 kode)</td></tr>
+    <tr><td>Tanggal Surat</td><td>Tanggal pada surat</td></tr>
+    <tr><td>Pengirim</td><td>Instansi/orang pengirim (wajib)</td></tr>
+    <tr><td>Perihal</td><td>Ringkasan isi surat</td></tr>
+    <tr><td>Sifat</td><td>Biasa / Penting / Segera / Rahasia</td></tr>
+    <tr><td>Status</td><td>Belum Diproses / Diproses / Selesai</td></tr>
+    <tr><td>Lampiran</td><td>Scan/softcopy surat (PDF/gambar), maks. 10 MB</td></tr>
+</table>
+<div class="alert biru">✨ <b>Nomor agenda dibuat OTOMATIS</b> format <code>urut/kode klasifikasi/tahun</code> — contoh <code>001/UM/2026</code>, <code>002/UM/2026</code>. Urut naik sendiri, reset tiap tahun, terpisah per kode klasifikasi dan per tipe surat. <b>Tidak perlu diisi manual.</b></div>
+<p>Tombol aksi pada tabel: 📤 Disposisi, ✏️ Ubah, 🗑 Hapus, 📎 Unduh lampiran.</p>
+
+<h4>B.8 Surat Keluar 📤</h4>
+<p>Sama seperti surat masuk, tetapi kolom <b>Pengirim</b> diganti <b>Tujuan</b> (kepada siapa surat dikirim), status menjadi <b>Terkirim / Arsip</b>, dan nomor agenda dihitung terpisah.</p>
+
+<h4>B.9 Disposisi Surat Masuk ✍️</h4>
+<ol>
+    <li>Buka <b>Surat Masuk</b> → klik tombol <b>📤 (Disposisi)</b>.</li>
+    <li>Isi: <b>Diteruskan Kepada</b> (ketik nama — saran nama pegawai muncul otomatis), <b>Instruksi Kepala Sekolah</b>, <b>Batas Waktu</b>, status → <b>Simpan</b>.</li>
+    <li>Satu surat boleh didisposisikan ke beberapa pegawai.</li>
+</ol>
+
+<h4>B.10 Notifikasi "Disposisi Saya" 🔔</h4>
+<ul>
+    <li>Pegawai yang didisposisikan melihat <b>lonceng di navbar</b> dengan angka merah — diperbarui otomatis tiap <b>60 detik</b>.</li>
+    <li>Klik lonceng / menu <b>Disposisi Saya</b> → daftar surat + instruksi + batas waktu (jika terlambat, ditandai merah).</li>
+    <li>Setelah selesai: klik <b>✅ Tandai Sudah Dikerjakan</b>.</li>
+    <li>Disposisi <b>hanya terlihat oleh penerima</b> — data pegawai lain tetap aman.</li>
+</ul>
+
+<h4>B.11 Laporan Daftar Surat 📄</h4>
+<ul>
+    <li><b>Export Excel</b> — unduh <i>Buku Agenda Surat</i> berkop sekolah + tanda tangan Kepala Sekolah. Isinya mengikuti kata kunci pencarian yang aktif.</li>
+    <li><b>Cetak / PDF</b> — tampilan A4 <i>landscape</i> berkop dengan logo. Untuk PDF: di dialog cetak pilih <b>"Simpan sebagai PDF"</b>.</li>
+</ul>
+
+<h4>B.12 Rekap Persuratan 📈</h4>
+<p>Menu <b>Rekap Surat</b>: pilih tahun → kartu total, grafik per klasifikasi (masuk &amp; keluar), grafik per bulan, dan tabel rekap Januari–Desember siap dilampirkan ke laporan.</p>
+
+<h4>B.13 Masalah Umum (FAQ)</h4>
+<table>
+    <tr><th>Masalah</th><th>Penyebab &amp; Solusi</th></tr>
+    <tr><td>Tidak bisa login</td><td>Pastikan aplikasi berjalan (PowerShell masih terbuka); username/password benar</td></tr>
+    <tr><td>Tampilan tidak berubah</td><td>Tekan <b>Ctrl + F5</b> (muat ulang paksa)</td></tr>
+    <tr><td>Tombol tidak bereaksi</td><td>Muat ulang halaman (F5); bila tetap, <b>Ctrl + F5</b></td></tr>
+    <tr><td>Lampiran gagal unggah</td><td>Maks. 10 MB — kompres/scan ulang surat</td></tr>
+    <tr><td>Notifikasi tidak muncul</td><td><b>Nama Lengkap</b> akun harus sama persis dengan nama tujuan disposisi; tunggu maks. 1 menit / muat ulang</td></tr>
+    <tr><td>Nomor agenda "tidak berurutan"</td><td>Wajar — urutan dihitung terpisah per kode klasifikasi &amp; tipe surat</td></tr>
+    <tr><td>HP tak bisa membuka</td><td>Satu WiFi dengan server, IP benar, firewall port 8080 dibuka</td></tr>
+</table>
+
+<h4>B.14 Keamanan &amp; Backup Data</h4>
+<ul>
+    <li>Login memakai token <b>JWT</b> (berlaku 12 jam); tombol <b>Keluar</b> langsung mencabut token.</li>
+    <li>Backup database secara rutin (contoh setiap Jumat):</li>
+</ul>
+<pre><code>pg_dump -U postgres -h localhost kepegawaian_smp &gt; backup-kepegawaian.sql</code></pre>
+<ul>
+    <li>Simpan file backup ke flashdisk/drive sekolah. Folder <code>uploads/surat</code> (berkas lampiran) juga perlu disalin saat backup.</li>
+</ul>
+
+<div class="ttd">
+    <p>Banjarbaru, November 2026<br><b>Penggunaan Aplikasi disahkan oleh,</b></p>
+    <div class="sp"></div>
+    <p>Kepala SMP Unggulan Idaman Banjarbaru<br>( ____________________________ )</p>
+</div>
+
+<footer>Panduan Aplikasi Kepegawaian &amp; Persuratan — SMP Unggulan Idaman Banjarbaru · November 2026</footer>
+</div>
+</body>
+</html>
