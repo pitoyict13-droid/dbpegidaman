@@ -8,6 +8,9 @@ Sistem informasi kepegawaian berbasis **Java (Spring Boot)** dengan keamanan log
 - 👥 **CRUD Data Pegawai** — NIP, nama, jabatan, status (Pegawai Tetap / Pegawai Tidak Tetap), mapel, pendidikan, tanggal lahir/masuk, telepon, email, gaji pokok, alamat
 - 📊 **Dashboard** — statistik total pegawai, sebaran status kepegawaian, sebaran jabatan, jumlah arsip surat masuk & keluar
 - 📨 **Manajemen Persuratan** — arsip surat masuk & surat keluar dengan **penomoran agenda otomatis bergaya Srikandi (Kalsel)** (`urut/kode klasifikasi/tahun`, contoh `001/UM/2026`), 17 kode klasifikasi arsip (UM, PT, SN, KP, UN, dst.), sifat surat (Biasa/Penting/Segera/Rahasia), status tindak lanjut, dan **lampiran file** (scan/softcopy surat, maks 10 MB) yang bisa diunduh
+- ✍️ **Disposisi surat masuk** — surat diteruskan kepada pegawai (nama dari data pegawai) beserta instruksi Kepala Sekolah, batas waktu, dan status tindak lanjut
+- 📄 **Laporan daftar surat** — export **Excel** (buku agenda berkop) dan **Cetak / Simpan PDF** langsung dari browser (tampilan A4 landscape berkop sekolah)
+- 📈 **Rekap persuratan** — statistik per klasifikasi dan per bulan dengan filter tahun
 - 🛡 **Peran pengguna** — `ADMIN` (kelola semua data & pengguna) dan `STAFF` (hanya melihat)
 - 📥 **Import Excel** — unduh template `.xlsx`, isi data pegawai, lalu unggah untuk masuk massal ke database (Apache POI, dengan validasi baris per baris dan laporan baris yang gagal)
 - 🔎 Pencarian pegawai, ubah password, kelola pengguna (khusus admin)
@@ -74,6 +77,10 @@ Buka browser: **http://localhost:8080**
 | POST | `/api/surat` | ADMIN | Catat surat baru (form-data + lampiran opsional) — nomor agenda otomatis |
 | PUT | `/api/surat/{id}` | ADMIN | Ubah arsip surat |
 | DELETE | `/api/surat/{id}` | ADMIN | Hapus arsip surat |
+| GET | `/api/surat/{id}/disposisi` | login | Daftar disposisi suatu surat |
+| POST | `/api/surat/{id}/disposisi` | ADMIN | Buat disposisi (diteruskan kepada + instruksi) |
+| DELETE | `/api/surat/{id}/disposisi/{disposisiId}` | ADMIN | Hapus disposisi |
+| GET | `/api/surat/export?tipe=MASUK` | login | Laporan Excel buku agenda surat |
 | GET/POST/DELETE | `/api/users` | ADMIN | Kelola pengguna |
 | POST | `/api/users/change-password` | login | Ganti password sendiri |
 

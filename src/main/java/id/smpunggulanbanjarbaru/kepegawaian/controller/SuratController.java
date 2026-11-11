@@ -1,6 +1,8 @@
 package id.smpunggulanbanjarbaru.kepegawaian.controller;
 
+import id.smpunggulanbanjarbaru.kepegawaian.model.Disposisi;
 import id.smpunggulanbanjarbaru.kepegawaian.model.Surat;
+import id.smpunggulanbanjarbaru.kepegawaian.service.SuratExportService;
 import id.smpunggulanbanjarbaru.kepegawaian.service.SuratService;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
@@ -26,9 +28,11 @@ import java.util.List;
 public class SuratController {
 
     private final SuratService service;
+    private final SuratExportService exportService;
 
-    public SuratController(SuratService service) {
+    public SuratController(SuratService service, SuratExportService exportService) {
         this.service = service;
+        this.exportService = exportService;
     }
 
     /** GET /api/surat?tipe=MASUK&cari=umum — daftar arsip surat. */
@@ -97,6 +101,51 @@ public class SuratController {
     @DeleteMapping("/{id}")
     public void hapus(@PathVariable Long id) {
         service.hapus(id);
+    }
+
+    /* ---------- disposisi surat masuk ---------- */
+
+    /** GET /api/surat/{id}/disposisi — daftar disposisi suatu surat. */
+    @GetMapping("/{id}/disposisi")
+    public List<Disposisi> daftarDisposisi(@PathVariable Long id) {
+        return service.disposisi(id);
+    }
+
+    /** POST /api/surat/{id}/disposisi — buat disposisi (khusus ADMIN). */
+    @PostMapping("/{id}/disposisi")
+    public Disposisi tambahDisposisi(@PathVariable Long id,
+                                     @RequestParam(required = false) String tanggalDisposisi,
+                                     @RequestParam String diteruskanKepada,
+                                     @RequestParam(required = false) String instruksi,
+                                     @RequestParam(required = false) String batasTanggal,
+                                     @RequestParam(required = false) String status) {
+        return service.tambahDisposisi(id,
+                (tanggalDisposisi == null || tanggalDisposisi.isBlank()) ? null : LocalDate.parse(tanggalDisposisi),
+                diteruskanKepada, instruksi,
+                (batasTanggal == null || batasTanggal.isBlank()) ? null : LocalDate.parse(batasTanggal),
+                status);
+    }
+
+    /** DELETE /api/surat/{id}/disposisi/{disposisiId} — hapus disposisi (khusus ADMIN). */
+    @DeleteMapping("/{id}/disposisi/{disposisiId}")
+    public void hapusDisposisi(@PathVariable Long id, @PathVariable Long disposisiId) {
+        service.hapusDisposisi(id, disposisiId);
+    }
+
+    /* ---------- laporan / export ---------- */
+
+    /** GET /api/surat/export?tipe=MASUK — laporan Excel (buku agenda). */
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> export(@RequestParam String tipe,
+                                         @RequestParam(required = false) String cari) {
+        String tipeFix = tipe.trim().toUpperCase();
+        List<Surat> daftar = service.semua(tipeFix, cari);
+        byte[] data = exportService.buatLaporan(tipeFix, daftar);
+        String namaFile = "buku-agenda-surat-" + tipeFix.toLowerCase() + ".xlsx";
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + namaFile + "\"")
+                .body(data);
     }
 
     private LocalDate parseTanggal(String nilai) {

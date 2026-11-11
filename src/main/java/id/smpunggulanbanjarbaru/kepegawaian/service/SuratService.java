@@ -1,6 +1,8 @@
 package id.smpunggulanbanjarbaru.kepegawaian.service;
 
+import id.smpunggulanbanjarbaru.kepegawaian.model.Disposisi;
 import id.smpunggulanbanjarbaru.kepegawaian.model.Surat;
+import id.smpunggulanbanjarbaru.kepegawaian.repository.DisposisiRepository;
 import id.smpunggulanbanjarbaru.kepegawaian.repository.SuratRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,11 +33,13 @@ public class SuratService {
     private static final Set<String> TIPE_VALID = Set.of("MASUK", "KELUAR");
 
     private final SuratRepository repository;
+    private final DisposisiRepository disposisiRepository;
     private final Path folderLampiran;
 
-    public SuratService(SuratRepository repository,
+    public SuratService(SuratRepository repository, DisposisiRepository disposisiRepository,
                         @Value("${app.upload-dir:uploads}") String uploadDir) {
         this.repository = repository;
+        this.disposisiRepository = disposisiRepository;
         this.folderLampiran = Paths.get(uploadDir, "surat").toAbsolutePath().normalize();
     }
 
@@ -103,7 +107,44 @@ public class SuratService {
     public void hapus(Long id) {
         Surat s = byId(id);
         hapusFileLama(s);
+        disposisiRepository.deleteBySuratId(id);
         repository.delete(s);
+    }
+
+    /* ---------- disposisi surat masuk ---------- */
+
+    @Transactional(readOnly = true)
+    public List<Disposisi> disposisi(Long suratId) {
+        byId(suratId); // pastikan surat ada
+        return disposisiRepository.findBySuratIdOrderByTanggalDisposisiAscIdAsc(suratId);
+    }
+
+    @Transactional
+    public Disposisi tambahDisposisi(Long suratId, LocalDate tanggalDisposisi, String diteruskanKepada,
+                                     String instruksi, LocalDate batasTanggal, String status) {
+        byId(suratId); // pastikan surat ada
+        if (diteruskanKepada == null || diteruskanKepada.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nama pegawai tujuan disposisi wajib diisi");
+        }
+        Disposisi d = new Disposisi();
+        d.setSuratId(suratId);
+        d.setTanggalDisposisi(tanggalDisposisi != null ? tanggalDisposisi : LocalDate.now());
+        d.setDiteruskanKepada(diteruskanKepada.trim());
+        d.setInstruksi((instruksi == null || instruksi.isBlank()) ? null : instruksi.trim());
+        d.setBatasTanggal(batasTanggal);
+        d.setStatus((status == null || status.isBlank()) ? "Diproses" : status.trim());
+        return disposisiRepository.save(d);
+    }
+
+    @Transactional
+    public void hapusDisposisi(Long suratId, Long disposisiId) {
+        byId(suratId);
+        Disposisi d = disposisiRepository.findById(disposisiId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disposisi tidak ditemukan"));
+        if (!d.getSuratId().equals(suratId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Disposisi bukan milik surat tersebut");
+        }
+        disposisiRepository.delete(d);
     }
 
     /* ---------- nomor agenda gaya Srikandi ---------- */

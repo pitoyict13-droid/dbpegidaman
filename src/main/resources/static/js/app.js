@@ -153,6 +153,7 @@ document.querySelectorAll(".page-link-nav").forEach((link) => {
         if (link.dataset.page === "pengguna" && state.user?.role === "ADMIN") muatUsers();
         if (link.dataset.page === "surat-masuk") muatSurat("MASUK");
         if (link.dataset.page === "surat-keluar") muatSurat("KELUAR");
+        if (link.dataset.page === "rekap-surat") renderRekap();
     });
 });
 
@@ -333,6 +334,7 @@ function renderSurat(tipe) {
             <td><span class="badge text-bg-${warnaStatus[s.statusSurat] || "secondary"}">${esc(s.statusSurat || "-")}</span></td>
             <td class="text-end">
                 ${s.lampiranNama ? `<button class="btn btn-sm btn-outline-success me-1" data-aksi="lampiran" data-id="${s.id}" title="Unduh lampiran: ${esc(s.lampiranNama)}"><i class="bi bi-paperclip"></i></button>` : ""}
+                ${tipe === "MASUK" ? `<button class="btn btn-sm btn-outline-info me-1" data-aksi="disposisi" data-id="${s.id}" title="Disposisi"><i class="bi bi-send-arrow-down"></i></button>` : ""}
                 ${admin ? `
                 <button class="btn btn-sm btn-outline-primary me-1" data-aksi="edit" data-id="${s.id}" title="Ubah"><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-outline-danger" data-aksi="hapus" data-id="${s.id}" title="Hapus"><i class="bi bi-trash"></i></button>`
@@ -346,6 +348,7 @@ function renderSurat(tipe) {
             const id = Number(btn.dataset.id);
             if (btn.dataset.aksi === "edit") bukaModalSurat(tipe, id);
             else if (btn.dataset.aksi === "hapus") hapusSurat(tipe, id);
+            else if (btn.dataset.aksi === "disposisi") bukaModalDisposisi(id);
             else unduhLampiran(id);
         });
     });
@@ -481,6 +484,252 @@ async function unduhLampiran(id) {
         showToast(e.message, "danger");
     }
 }
+
+/* ---------- disposisi surat masuk ---------- */
+const modalDisposisi = () => new bootstrap.Modal("#modal-disposisi");
+let disposisiSuratId = null;
+
+function bukaModalDisposisi(id) {
+    disposisiSuratId = id;
+    const s = state.surat.MASUK.find((x) => x.id === id);
+    if (!s) return;
+    $("#disposisi-surat-info").innerHTML =
+        `<b>No. Agenda:</b> ${esc(s.nomorAgenda || "-")} &nbsp;|&nbsp; <b>Dari:</b> ${esc(s.pengirim || "-")}<br>` +
+        `<b>Perihal:</b> ${esc(s.perihal)}`;
+    $("#d-tanggal").value = new Date().toISOString().slice(0, 10);
+    $("#d-batas").value = "";
+    $("#d-instruksi").value = "";
+    $("#d-kepada").value = "";
+    $("#d-status").value = "Diproses";
+
+    // datalist nama pegawai untuk mempermudah pengisian
+    $("#daftar-pegawai-list").innerHTML = state.pegawaiList
+        .map((p) => `<option value="${esc(p.nama)}"></option>`).join("");
+
+    muatDisposisi(id);
+    modalDisposisi().show();
+}
+
+async function muatDisposisi(id) {
+    const box = $("#daftar-disposisi");
+    box.innerHTML = `<div class="text-muted small"><i class="bi bi-hourglass-split me-1"></i>Memuat...</div>`;
+    try {
+        const list = await api(API.surat + "/" + id + "/disposisi");
+        if (!list.length) {
+            box.innerHTML = `<div class="text-muted small py-2"><i class="bi bi-inbox me-1"></i>Belum ada disposisi untuk surat ini.</div>`;
+            return;
+        }
+        const admin = state.user?.role === "ADMIN";
+        const warnaStatus = {"Diproses": "warning text-dark", "Selesai": "success"};
+        box.innerHTML = list.map((d) => `
+            <div class="border rounded p-2 mb-2 bg-light">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="fw-semibold"><i class="bi bi-person-check me-1 text-primary"></i>${esc(d.diteruskanKepada)}</span>
+                        <span class="badge text-bg-${warnaStatus[d.status] || "secondary"} ms-2">${esc(d.status || "Diproses")}</span>
+                        <div class="small text-muted">Tanggal: ${tglIndo(d.tanggalDisposisi)}${d.batasTanggal ? " &nbsp;|&nbsp; Batas: " + tglIndo(d.batasTanggal) : ""}</div>
+                        ${d.instruksi ? `<div class="small mt-1"><i class="bi bi-chat-left-text me-1"></i>${esc(d.instruksi)}</div>` : ""}
+                    </div>
+                    ${admin ? `<button class="btn btn-sm btn-outline-danger" data-disid="${d.id}" title="Hapus"><i class="bi bi-trash"></i></button>` : ""}
+                </div>
+            </div>`).join("");
+
+        box.querySelectorAll("button[data-disid]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("Hapus disposisi ini?")) return;
+                try {
+                    await api(API.surat + "/" + id + "/disposisi/" + btn.dataset.disid, {method: "DELETE"});
+                    showToast("Disposisi dihapus", "success");
+                    muatDisposisi(id);
+                } catch (e) {
+                    showToast(e.message, "danger");
+                }
+            });
+        });
+    } catch (e) {
+        box.innerHTML = `<div class="text-danger small">${esc(e.message)}</div>`;
+    }
+}
+
+$("#form-disposisi").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append("tanggalDisposisi", $("#d-tanggal").value);
+    fd.append("diteruskanKepada", $("#d-kepada").value.trim());
+    fd.append("instruksi", $("#d-instruksi").value.trim());
+    fd.append("batasTanggal", $("#d-batas").value);
+    fd.append("status", $("#d-status").value);
+    try {
+        const res = await fetch(API.surat + "/" + disposisiSuratId + "/disposisi", {
+            method: "POST",
+            headers: {"Authorization": "Bearer " + state.token},
+            body: fd,
+        });
+        if (!res.ok) {
+            let msg = "Gagal menyimpan disposisi";
+            try { msg = (await res.json()).message || msg; } catch (_) {}
+            throw new Error(msg);
+        }
+        showToast("Disposisi tersimpan", "success");
+        $("#d-kepada").value = "";
+        $("#d-instruksi").value = "";
+        $("#d-batas").value = "";
+        $("#d-status").value = "Diproses";
+        muatDisposisi(disposisiSuratId);
+    } catch (ex) {
+        showToast(ex.message, "danger");
+    }
+});
+
+/* ---------- export excel & cetak daftar surat ---------- */
+async function unduhLaporan(tipe) {
+    try {
+        const short = tipe === "MASUK" ? "sm" : "sk";
+        const url = API.surat + "/export?tipe=" + tipe + "&cari=" + encodeURIComponent($("#cari-" + short).value.trim());
+        const res = await fetch(url, {headers: {"Authorization": "Bearer " + state.token}});
+        if (!res.ok) throw new Error("Gagal membuat laporan Excel");
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "buku-agenda-surat-" + tipe.toLowerCase() + ".xlsx";
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast("Laporan Excel diunduh", "success");
+    } catch (e) {
+        showToast(e.message, "danger");
+    }
+}
+
+$("#btn-export-sm").addEventListener("click", () => unduhLaporan("MASUK"));
+$("#btn-export-sk").addEventListener("click", () => unduhLaporan("KELUAR"));
+
+function cetakDaftarSurat(tipe) {
+    const short = tipe === "MASUK" ? "sm" : "sk";
+    const judul = tipe === "MASUK" ? "BUKU AGENDA SURAT MASUK" : "BUKU AGENDA SURAT KELUAR";
+    const filter = $("#cari-" + short).value.trim().toLowerCase();
+    const data = state.surat[tipe].filter((s) => !filter || [
+        s.nomorAgenda, s.nomorSurat, s.pengirim, s.tujuan, s.perihal, s.klasifikasi,
+    ].some((v) => (v || "").toLowerCase().includes(filter)));
+
+    const w = window.open("", "_blank", "width=1000,height=700");
+    if (!w) { showToast("Popup diblokir browser — izinkan popup untuk mencetak", "warning"); return; }
+    const baris = data.length
+        ? data.map((s, i) => `<tr>
+            <td class="c">${i + 1}</td>
+            <td>${esc(s.nomorAgenda || "-")}</td>
+            <td>${esc(s.nomorSurat)}</td>
+            <td>${tglIndo(s.tanggalSurat)}</td>
+            <td>${esc(tipe === "MASUK" ? s.pengirim : s.tujuan) || "-"}</td>
+            <td>${esc(s.klasifikasi)}</td>
+            <td>${esc(s.perihal)}</td>
+            <td>${esc(s.sifatSurat || "Biasa")}</td>
+            <td>${esc(s.statusSurat || "-")}</td></tr>`).join("")
+        : `<tr><td colspan="9" class="c text-muted">Belum ada data surat.</td></tr>`;
+
+    w.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>${judul}</title>
+    <style>
+        body { font-family: "Times New Roman", serif; margin: 24px; }
+        .kop { display: flex; align-items: center; gap: 14px; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 16px; }
+        .kop img { width: 78px; height: 78px; object-fit: contain; }
+        .kop .t { flex: 1; text-align: center; line-height: 1.3; }
+        .kop h1 { font-size: 20px; margin: 0; }
+        .kop p { margin: 2px 0 0; font-size: 12px; }
+        h2 { text-align: center; font-size: 15px; text-decoration: underline; margin: 4px 0 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #333; padding: 5px 7px; vertical-align: top; }
+        th { background: #e8eefc; text-align: center; }
+        .c { text-align: center; }
+        .ttd { margin-top: 28px; float: right; width: 300px; text-align: center; font-size: 13px; }
+        .ttd .sp { height: 64px; }
+        @media print { @page { size: A4 landscape; margin: 12mm; } }
+    </style></head><body>
+    <div class="kop">
+        <img src="${location.origin}/image/logoPendidikan.png" alt="logo">
+        <div class="t"><h1>SMP UNGGULAN IDAMAN BANJARBARU</h1>
+        <p>Alamat: Kota Banjarbaru, Kalimantan Selatan</p></div>
+    </div>
+    <h2>${judul}</h2>
+    <table>
+        <thead><tr><th>No</th><th>Nomor Agenda</th><th>Nomor Surat</th><th>Tanggal</th>
+        <th>${tipe === "MASUK" ? "Pengirim" : "Tujuan"}</th><th>Klasifikasi</th><th>Perihal</th>
+        <th>Sifat</th><th>Status</th></tr></thead>
+        <tbody>${baris}</tbody>
+    </table>
+    <div class="ttd">
+        <p>Banjarbaru, ${new Date().toLocaleDateString("id-ID", {day: "2-digit", month: "long", year: "numeric"})}</p>
+        <p>Kepala SMP Unggulan Idaman Banjarbaru</p>
+        <div class="sp"></div>
+        <p>( ____________________________ )</p>
+    </div>
+    </body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400); // tunggu logo termuat
+}
+
+$("#btn-cetak-sm").addEventListener("click", () => cetakDaftarSurat("MASUK"));
+$("#btn-cetak-sk").addEventListener("click", () => cetakDaftarSurat("KELUAR"));
+
+/* ---------- rekap persuratan ---------- */
+const BULAN_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+function renderRekap() {
+    // pilihan tahun dari data yang ada
+    const tahunSet = new Set();
+    ["MASUK", "KELUAR"].forEach((t) => state.surat[t].forEach((s) => tahunSet.add(s.tanggalSurat?.slice(0, 4))));
+    tahunSet.add(String(new Date().getFullYear()));
+    const tahunTersedia = [...tahunSet].filter(Boolean).sort().reverse();
+    const sel = $("#rekap-tahun");
+    const terpilih = sel.value && tahunTersedia.includes(sel.value) ? sel.value : tahunTersedia[0];
+    sel.innerHTML = tahunTersedia.map((y) => `<option${y === terpilih ? " selected" : ""}>${y}</option>`).join("");
+    const tahun = sel.value;
+
+    const sm = state.surat.MASUK.filter((s) => s.tanggalSurat?.startsWith(tahun));
+    const sk = state.surat.KELUAR.filter((s) => s.tanggalSurat?.startsWith(tahun));
+
+    $("#rekap-stats").innerHTML = `
+        <div class="col-4"><div class="stat-card stat-primary p-3 text-center">
+            <div class="num">${sm.length + sk.length}</div><div class="lbl">Total Surat ${tahun}</div></div></div>
+        <div class="col-4"><div class="stat-card stat-secondary p-3 text-center">
+            <div class="num">${sm.length}</div><div class="lbl">Surat Masuk</div></div></div>
+        <div class="col-4"><div class="stat-card stat-danger p-3 text-center">
+            <div class="num">${sk.length}</div><div class="lbl">Surat Keluar</div></div></div>`;
+
+    const perKlas = (list) => {
+        const map = {};
+        list.forEach((s) => { const k = s.klasifikasi || "(tanpa kode)"; map[k] = (map[k] || 0) + 1; });
+        return Object.entries(map).sort((a, b) => b[1] - a[1]);
+    };
+    $("#rekap-klas-sm").innerHTML = barChart(perKlas(sm).map(([k, n]) =>
+        [`${k} — ${NAMA_KLASIFIKASI[k] || ""}`, n]));
+    $("#rekap-klas-sk").innerHTML = barChart(perKlas(sk).map(([k, n]) =>
+        [`${k} — ${NAMA_KLASIFIKASI[k] || ""}`, n]));
+
+    // rekap per bulan
+    const masukPerBulan = Array(12).fill(0), keluarPerBulan = Array(12).fill(0);
+    sm.forEach((s) => masukPerBulan[Number(s.tanggalSurat.slice(5, 7)) - 1]++);
+    sk.forEach((s) => keluarPerBulan[Number(s.tanggalSurat.slice(5, 7)) - 1]++);
+
+    const tbody = $("#tbody-rekap");
+    tbody.innerHTML = BULAN_ID.map((b, i) => `
+        <tr>
+            <td>${b}</td>
+            <td>${masukPerBulan[i]}</td>
+            <td>${keluarPerBulan[i]}</td>
+            <td class="fw-semibold">${masukPerBulan[i] + keluarPerBulan[i]}</td>
+        </tr>`).join("") + `
+        <tr class="table-light fw-bold">
+            <td>Jumlah Tahun ${tahun}</td>
+            <td>${sm.length}</td><td>${sk.length}</td>
+            <td>${sm.length + sk.length}</td>
+        </tr>`;
+
+    $("#rekap-bulan").innerHTML = barChart(
+        BULAN_ID.map((b, i) => [b, masukPerBulan[i] + keluarPerBulan[i]]).filter(([, n]) => n > 0));
+}
+
+$("#rekap-tahun").addEventListener("change", renderRekap);
 
 /* ---------- import excel ---------- */
 $("#btn-import").addEventListener("click", () => {
