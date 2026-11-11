@@ -158,7 +158,7 @@ function renderPegawai() {
     const admin = state.user?.role === "ADMIN";
     data.forEach((p, i) => {
         const tr = document.createElement("tr");
-        const warnaBadge = {"PNS": "primary", "PPPK": "success", "GTT": "warning text-dark", "PTT": "warning text-dark", "Honorer": "secondary"};
+        const warnaBadge = {"Pegawai Tetap": "primary", "Pegawai Tidak Tetap": "warning text-dark"};
         tr.innerHTML = `
             <td>${i + 1}</td>
             <td><span class="fw-semibold">${esc(p.nama)}</span></td>
@@ -332,7 +332,7 @@ function renderDashboard() {
     const total = list.length;
     const guru = list.filter((p) => ["Guru", "Wali Kelas", "Kepala Sekolah", "Wakil Kepala Sekolah"].includes(p.jabatan)).length;
     const tendik = total - guru;
-    const pns = list.filter((p) => p.statusKepegawaian === "PNS").length;
+    const pt = list.filter((p) => p.statusKepegawaian === "Pegawai Tetap").length;
 
     $("#stats").innerHTML = `
         <div class="col-6 col-lg-3"><div class="stat-card stat-primary p-3 d-flex justify-content-between align-items-center">
@@ -342,7 +342,7 @@ function renderDashboard() {
         <div class="col-6 col-lg-3"><div class="stat-card stat-warning p-3 d-flex justify-content-between align-items-center">
             <div><div class="num">${tendik}</div><div class="lbl">Tenaga Kependidikan</div></div><i class="bi bi-person-hearts ico"></i></div></div>
         <div class="col-6 col-lg-3"><div class="stat-card stat-info p-3 d-flex justify-content-between align-items-center">
-            <div><div class="num">${pns}</div><div class="lbl">PNS</div></div><i class="bi bi-patch-check ico"></i></div></div>`;
+            <div><div class="num">${pt}</div><div class="lbl">Pegawai Tetap</div></div><i class="bi bi-patch-check ico"></i></div></div>`;
 
     $("#chart-status").innerHTML = barChart(grupkan(list, "statusKepegawaian"));
     $("#chart-jabatan").innerHTML = barChart(grupkan(list, "jabatan"));

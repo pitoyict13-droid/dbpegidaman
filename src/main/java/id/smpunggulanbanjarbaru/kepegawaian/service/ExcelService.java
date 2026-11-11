@@ -65,7 +65,7 @@ public class ExcelService {
             Row contoh = sheet.createRow(1);
             String[] contohData = {
                     "198705122010011005", "Budi Santoso (contoh - hapus baris ini)", "L", "Guru",
-                    "PNS", "Matematika", "S1", "1987-05-12", "2010-01-10",
+                    "Pegawai Tetap", "Matematika", "S1", "1987-05-12", "2010-01-10",
                     "081234567890", "budi.santoso@contoh.id", "4500000", "Jl. Merdeka No. 10, Banjarbaru"
             };
             for (int i = 0; i < contohData.length; i++) {
@@ -80,7 +80,7 @@ public class ExcelService {
                     "2. Kolom wajib: Nama, Jabatan, Status Kepegawaian.",
                     "3. NIP boleh kosong untuk pegawai non-ASN (GTT/PTT/Honorer).",
                     "4. Jenis Kelamin hanya boleh huruf L atau P.",
-                    "5. Status Kepegawaian: PNS / PPPK / GTT / PTT / Honorer.",
+                    "5. Status Kepegawaian: Pegawai Tetap / Pegawai Tidak Tetap.",
                     "6. Pendidikan Terakhir: SMA/SMK / D3 / S1 / S2 / S3.",
                     "7. Tanggal gunakan format yyyy-MM-dd, contoh: 1990-05-17.",
                     "8. Gaji Pokok hanya angka tanpa titik/koma, contoh: 4500000.",
