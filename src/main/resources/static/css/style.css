@@ -4,6 +4,9 @@ body {
     background-color: #f4f6fb;
 }
 
+/* Elemen dengan atribut hidden harus benar-benar hilang (kalahkan d-flex dll.) */
+[hidden] { display: none !important; }
+
 /* ---------- LOGIN ---------- */
 .login-bg {
     background: linear-gradient(135deg, #0d6efd 0%, #0a3d91 60%, #062a63 100%);
