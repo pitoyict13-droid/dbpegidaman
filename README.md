@@ -8,8 +8,9 @@ Sistem informasi kepegawaian berbasis **Java (Spring Boot)** dengan keamanan log
 - 👥 **CRUD Data Pegawai** — NIP, nama, jabatan, status (PNS/PPPK/GTT/PTT/Honorer), mapel, pendidikan, tanggal lahir/masuk, telepon, email, gaji pokok, alamat
 - 📊 **Dashboard** — statistik total pegawai, sebaran status kepegawaian, sebaran jabatan
 - 🛡 **Peran pengguna** — `ADMIN` (kelola semua data & pengguna) dan `STAFF` (hanya melihat)
+- 📥 **Import Excel** — unduh template `.xlsx`, isi data pegawai, lalu unggah untuk masuk massal ke database (Apache POI, dengan validasi baris per baris dan laporan baris yang gagal)
 - 🔎 Pencarian pegawai, ubah password, kelola pengguna (khusus admin)
-- 📱 Frontend responsif + PWA (bisa di-install di Android dari Chrome)
+- 📱 Frontend responsif **Bootstrap 5** + PWA (bisa di-install di Android dari Chrome)
 
 ## Teknologi
 
@@ -61,6 +62,8 @@ Buka browser: **http://localhost:8080**
 | POST | `/api/auth/logout` | login | Mencabut token |
 | GET | `/api/pegawai?cari=...` | login | Daftar pegawai (+ pencarian) |
 | GET | `/api/pegawai/{id}` | login | Detail pegawai |
+| GET | `/api/pegawai/template` | login | Unduh template Excel (.xlsx) |
+| POST | `/api/pegawai/import` | ADMIN | Import massal dari file Excel |
 | POST | `/api/pegawai` | ADMIN | Tambah pegawai |
 | PUT | `/api/pegawai/{id}` | ADMIN | Ubah pegawai |
 | DELETE | `/api/pegawai/{id}` | ADMIN | Hapus pegawai |
@@ -101,7 +104,7 @@ kepegawaian-smp/
     │   ├── model/       (User, Pegawai, Role)
     │   ├── repository/  (UserRepository, PegawaiRepository)
     │   ├── security/    (JwtService, JwtAuthenticationFilter, SecurityConfig, TokenBlacklistService, CustomUserDetailsService)
-    │   └── service/     (AuthService, PegawaiService)
+    │   └── service/     (AuthService, PegawaiService, ExcelService)
     └── resources/
         ├── application.yml
         └── static/      (frontend: index.html, css/, js/, manifest.json, sw.js)
