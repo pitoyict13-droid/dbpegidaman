@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e5d8c">
+    <title>Kepegawaian - SMP Unggulan Idaman Banjarbaru</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ============ HALAMAN LOGIN ============ -->
+<div id="login-view">
+    <div class="login-card">
+        <div class="login-logo">🎓</div>
+        <h1>SMP Unggulan Idaman Banjarbaru</h1>
+        <p class="login-sub">Sistem Informasi Kepegawaian</p>
+        <div id="login-error" class="alert alert-error" hidden></div>
+        <form id="login-form">
+            <label for="username">Username</label>
+            <input type="text" id="username" autocomplete="username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" autocomplete="current-password" required>
+            <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+        </form>
+        <p class="login-foot">Aplikasi Kepegawaian &middot; Keamanan: JSON Web Token (JWT)</p>
+    </div>
+</div>
+
+<!-- ============ APLIKASI UTAMA ============ -->
+<div id="app-view" hidden>
+    <header class="topbar">
+        <button id="btn-menu" class="btn-icon" aria-label="Menu">☰</button>
+        <span class="topbar-title">📘 Kepegawaian — SMP Unggulan Idaman Banjarbaru</span>
+        <span id="user-chip" class="user-chip"></span>
+    </header>
+
+    <div class="layout">
+        <aside id="sidebar">
+            <nav>
+                <button class="nav-btn active" data-page="dashboard">🏠 Dashboard</button>
+                <button class="nav-btn" data-page="pegawai">👥 Data Pegawai</button>
+                <button class="nav-btn admin-only" data-page="pengguna">🔐 Pengguna</button>
+                <button class="nav-btn" data-page="akun">🔑 Ganti Password</button>
+                <button class="nav-btn" id="btn-logout">🚪 Keluar</button>
+            </nav>
+            <div class="sidebar-foot">
+                <small id="role-label"></small>
+            </div>
+        </aside>
+
+        <main id="content">
+            <!-- DASHBOARD -->
+            <section id="page-dashboard" class="page">
+                <h2>Dashboard</h2>
+                <div class="stats" id="stats"></div>
+                <h3>Sebaran Status Kepegawaian</h3>
+                <div id="chart-status" class="chart"></div>
+                <h3>Sebaran Jabatan</h3>
+                <div id="chart-jabatan" class="chart"></div>
+            </section>
+
+            <!-- DATA PEGAWAI -->
+            <section id="page-pegawai" class="page" hidden>
+                <div class="page-head">
+                    <h2>Data Pegawai</h2>
+                    <button id="btn-tambah" class="btn btn-primary admin-only">+ Tambah Pegawai</button>
+                </div>
+                <input id="cari" type="search" class="input-search" placeholder="🔎 Cari nama pegawai...">
+                <div class="table-wrap">
+                    <table id="tabel-pegawai">
+                        <thead>
+                        <tr>
+                            <th>No</th><th>Nama</th><th>NIP</th><th>Jabatan</th>
+                            <th>Status</th><th>Mapel</th><th>Pendidikan</th><th>Telepon</th>
+                            <th class="aksi-col">Aksi</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tbody-pegawai"></tbody>
+                    </table>
+                </div>
+                <p id="pegawai-kosong" class="empty" hidden>Tidak ada data pegawai.</p>
+            </section>
+
+            <!-- PENGGUNA -->
+            <section id="page-pengguna" class="page" hidden>
+                <div class="page-head">
+                    <h2>Kelola Pengguna</h2>
+                    <button id="btn-tambah-user" class="btn btn-primary">+ Tambah Pengguna</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>No</th><th>Username</th><th>Nama Lengkap</th><th>Peran</th><th>Aksi</th></tr></thead>
+                        <tbody id="tbody-users"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- GANTI PASSWORD -->
+            <section id="page-akun" class="page" hidden>
+                <h2>Ganti Password</h2>
+                <div class="card-narrow">
+                    <form id="form-password" class="form-vertical">
+                        <label>Password lama</label>
+                        <input type="password" id="pw-lama" required>
+                        <label>Password baru (minimal 6 karakter)</label>
+                        <input type="password" id="pw-baru" minlength="6" required>
+                        <label>Konfirmasi password baru</label>
+                        <input type="password" id="pw-baru2" minlength="6" required>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- ============ MODAL FORM PEGAWAI ============ -->
+<div id="modal-pegawai" class="modal" hidden>
+    <div class="modal-card">
+        <h3 id="modal-pegawai-title">Tambah Pegawai</h3>
+        <form id="form-pegawai" class="form-vertical">
+            <div class="form-row">
+                <div><label>NIP (boleh kosong)</label><input type="text" id="f-nip" inputmode="numeric"></div>
+                <div><label>Nama *</label><input type="text" id="f-nama" required></div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Jenis Kelamin</label>
+                    <select id="f-jk"><option value="">- pilih -</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+                </div>
+                <div>
+                    <label>Status Kepegawaian *</label>
+                    <select id="f-status" required>
+                        <option value="">- pilih -</option>
+                        <option>PNS</option><option>PPPK</option><option>GTT</option><option>PTT</option><option>Honorer</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Jabatan *</label>
+                    <select id="f-jabatan" required>
+                        <option value="">- pilih -</option>
+                        <option>Guru</option><option>Wali Kelas</option><option>Kepala Sekolah</option>
+                        <option>Wakil Kepala Sekolah</option><option>Tata Usaha</option><option>Operator</option>
+                        <option>Pustakawan</option><option>Penjaga Sekolah</option><option>Lainnya</option>
+                    </select>
+                </div>
+                <div><label>Mata Pelajaran</label><input type="text" id="f-mapel"></div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Pendidikan Terakhir</label>
+                    <select id="f-pendidikan">
+                        <option value="">- pilih -</option>
+                        <option>SMA/SMK</option><option>D3</option><option>S1</option><option>S2</option><option>S3</option>
+                    </select>
+                </div>
+                <div><label>Tanggal Lahir</label><input type="date" id="f-tgl-lahir"></div>
+            </div>
+            <div class="form-row">
+                <div><label>Tanggal Masuk</label><input type="date" id="f-tgl-masuk"></div>
+                <div><label>Telepon</label><input type="tel" id="f-telepon"></div>
+            </div>
+            <div class="form-row">
+                <div><label>Email</label><input type="email" id="f-email"></div>
+                <div><label>Gaji Pokok (Rp)</label><input type="number" id="f-gaji" min="0" step="0.01"></div>
+            </div>
+            <label>Alamat</label>
+            <input type="text" id="f-alamat">
+            <div class="modal-actions">
+                <button type="button" class="btn" data-close="modal-pegawai">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============ MODAL FORM PENGGUNA ============ -->
+<div id="modal-user" class="modal" hidden>
+    <div class="modal-card">
+        <h3>Tambah Pengguna</h3>
+        <form id="form-user" class="form-vertical">
+            <label>Username</label>
+            <input type="text" id="u-username" required maxlength="50">
+            <label>Password (minimal 6 karakter)</label>
+            <input type="password" id="u-password" required minlength="6">
+            <label>Nama Lengkap</label>
+            <input type="text" id="u-nama" required maxlength="100">
+            <label>Peran</label>
+            <select id="u-role"><option value="ADMIN">ADMIN (kelola data)</option><option value="STAFF">STAFF (lihat saja)</option></select>
+            <div class="modal-actions">
+                <button type="button" class="btn" data-close="modal-user">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast" hidden></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
