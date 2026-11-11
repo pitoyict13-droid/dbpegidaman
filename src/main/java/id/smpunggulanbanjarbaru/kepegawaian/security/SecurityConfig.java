@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Halaman web (frontend statis) boleh diakses semua
-                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/manifest.json", "/sw.js").permitAll()
+                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/image/**", "/manifest.json", "/sw.js").permitAll()
                         // Login terbuka
                         .requestMatchers("/api/auth/login").permitAll()
                         // Kelola pengguna: khusus ADMIN
