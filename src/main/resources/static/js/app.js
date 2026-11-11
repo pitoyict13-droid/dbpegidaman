@@ -14,6 +14,7 @@ const API = {
     users: "/api/users",
     changePassword: "/api/users/change-password",
     surat: "/api/surat",
+    disposisiSaya: "/api/disposisi-saya",
 };
 
 const state = {
@@ -23,6 +24,7 @@ const state = {
     editId: null,
     surat: { MASUK: [], KELUAR: [] },
     editSuratId: null,
+    notifikasi: [],
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -121,6 +123,11 @@ async function masukAplikasi() {
     await muatPegawai();
     await muatSemuaSurat();
     if (admin) await muatUsers();
+    await muatNotif();
+    $("#disposisi-saya-nama").textContent = state.user.namaLengkap;
+    // perbarui notifikasi tiap 60 detik
+    clearInterval(state._notifTimer);
+    state._notifTimer = setInterval(muatNotif, 60000);
 }
 
 function forceLogout() {
@@ -154,6 +161,7 @@ document.querySelectorAll(".page-link-nav").forEach((link) => {
         if (link.dataset.page === "surat-masuk") muatSurat("MASUK");
         if (link.dataset.page === "surat-keluar") muatSurat("KELUAR");
         if (link.dataset.page === "rekap-surat") renderRekap();
+        if (link.dataset.page === "disposisi-saya") { muatNotif(); renderDisposisiSaya(); }
     });
 });
 
@@ -730,6 +738,69 @@ function renderRekap() {
 }
 
 $("#rekap-tahun").addEventListener("change", renderRekap);
+
+/* ---------- notifikasi disposisi (web) ---------- */
+async function muatNotif() {
+    try {
+        state.notifikasi = await api(API.disposisiSaya);
+        const belum = state.notifikasi.filter((d) => d.status !== "Selesai").length;
+        const badge = $("#notif-count");
+        badge.textContent = belum;
+        badge.hidden = belum === 0;
+        if (!$("#page-disposisi-saya").hidden) renderDisposisiSaya();
+    } catch (_) { /* abaikan - pengguna mungkin belum punya disposisi */ }
+}
+
+$("#btn-notif").addEventListener("click", (e) => {
+    e.preventDefault();
+    const link = document.querySelector('[data-page="disposisi-saya"]');
+    link.click(); // pakai handler navigasi yang sudah ada
+});
+
+function renderDisposisiSaya() {
+    const box = $("#daftar-disposisi-saya");
+    const data = state.notifikasi;
+    $("#ds-kosong").hidden = data.length > 0;
+    box.innerHTML = "";
+    data.forEach((d) => {
+        const belum = d.status !== "Selesai";
+        const lewat = belum && d.batasTanggal && new Date(d.batasTanggal) < new Date(new Date().toDateString());
+        const col = document.createElement("div");
+        col.className = "col-12 mb-3";
+        col.innerHTML = `
+        <div class="card border-0 shadow-sm ${belum ? "border-start border-4 border-primary" : "opacity-75"}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <span class="badge text-bg-primary">${esc(d.nomorAgenda || "-")}</span>
+                        <span class="badge text-bg-${belum ? (lewat ? "danger" : "warning text-dark") : "success"}">
+                            ${belum ? (lewat ? "Terlambat — batas " + tglIndo(d.batasTanggal) : "Perlu Dikerjakan") : "Selesai ✓"}
+                        </span>
+                    </div>
+                    <small class="text-muted">Didisposisikan: ${tglIndo(d.tanggalDisposisi)}</small>
+                </div>
+                <div class="mt-2"><b>Perihal:</b> ${esc(d.perihal || "-")}</div>
+                <div class="small text-muted">Dari: ${esc(d.pengirim || "-")} | No. Surat: ${esc(d.nomorSurat || "-")}</div>
+                ${d.instruksi ? `<div class="mt-2 p-2 bg-light border rounded small"><i class="bi bi-chat-left-text me-1 text-primary"></i><b>Instruksi:</b> ${esc(d.instruksi)}</div>` : ""}
+                ${d.batasTanggal ? `<div class="small mt-1"><i class="bi bi-alarm me-1"></i>Batas waktu: ${tglIndo(d.batasTanggal)}</div>` : ""}
+                ${belum ? `<button class="btn btn-sm btn-success mt-2" data-selesai="${d.id}"><i class="bi bi-check2-circle me-1"></i>Tandai Sudah Dikerjakan</button>` : ""}
+            </div>
+        </div>`;
+        box.appendChild(col);
+    });
+
+    box.querySelectorAll("button[data-selesai]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            try {
+                await api(API.disposisiSaya + "/" + btn.dataset.selesai + "/selesai", {method: "POST"});
+                showToast("Disposisi ditandai selesai — terima kasih! 🎉", "success");
+                await muatNotif();
+            } catch (e) {
+                showToast(e.message, "danger");
+            }
+        });
+    });
+}
 
 /* ---------- import excel ---------- */
 $("#btn-import").addEventListener("click", () => {

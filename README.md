@@ -10,6 +10,7 @@ Sistem informasi kepegawaian berbasis **Java (Spring Boot)** dengan keamanan log
 - 📨 **Manajemen Persuratan** — arsip surat masuk & surat keluar dengan **penomoran agenda otomatis bergaya Srikandi (Kalsel)** (`urut/kode klasifikasi/tahun`, contoh `001/UM/2026`), 17 kode klasifikasi arsip (UM, PT, SN, KP, UN, dst.), sifat surat (Biasa/Penting/Segera/Rahasia), status tindak lanjut, dan **lampiran file** (scan/softcopy surat, maks 10 MB) yang bisa diunduh
 - ✍️ **Disposisi surat masuk** — surat diteruskan kepada pegawai (nama dari data pegawai) beserta instruksi Kepala Sekolah, batas waktu, dan status tindak lanjut
 - 📄 **Laporan daftar surat** — export **Excel** (buku agenda berkop) dan **Cetak / Simpan PDF** langsung dari browser (tampilan A4 landscape berkop sekolah)
+- 🔔 **Notifikasi web "Disposisi Saya"** — pegawai yang didisposisikan melihat lonceng 🔔 di navbar (angka merah = jumlah yang perlu dikerjakan), halaman daftar surat + instruksi, dan tombol "Tandai Sudah Dikerjakan"; diperbarui otomatis tiap 60 detik dan hanya terlihat oleh penerima disposisi
 - 📈 **Rekap persuratan** — statistik per klasifikasi dan per bulan dengan filter tahun
 - 🛡 **Peran pengguna** — `ADMIN` (kelola semua data & pengguna) dan `STAFF` (hanya melihat)
 - 📥 **Import Excel** — unduh template `.xlsx`, isi data pegawai, lalu unggah untuk masuk massal ke database (Apache POI, dengan validasi baris per baris dan laporan baris yang gagal)
@@ -81,6 +82,8 @@ Buka browser: **http://localhost:8080**
 | POST | `/api/surat/{id}/disposisi` | ADMIN | Buat disposisi (diteruskan kepada + instruksi) |
 | DELETE | `/api/surat/{id}/disposisi/{disposisiId}` | ADMIN | Hapus disposisi |
 | GET | `/api/surat/export?tipe=MASUK` | login | Laporan Excel buku agenda surat |
+| GET | `/api/disposisi-saya` | login | Daftar disposisi untuk pengguna yang sedang login |
+| POST | `/api/disposisi-saya/{id}/selesai` | login | Tandai disposisi saya sudah dikerjakan |
 | GET/POST/DELETE | `/api/users` | ADMIN | Kelola pengguna |
 | POST | `/api/users/change-password` | login | Ganti password sendiri |
 
