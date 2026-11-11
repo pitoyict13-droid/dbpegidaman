@@ -8,7 +8,7 @@
     <link rel="manifest" href="/manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=3">
+    <link rel="stylesheet" href="/css/style.css?v=4">
 </head>
 <body>
 
@@ -51,6 +51,8 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link page-link-nav active" href="#" data-page="dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="pegawai"><i class="bi bi-people me-1"></i>Data Pegawai</a></li>
+                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="surat-masuk"><i class="bi bi-envelope-arrow-down me-1"></i>Surat Masuk</a></li>
+                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="surat-keluar"><i class="bi bi-envelope-arrow-up me-1"></i>Surat Keluar</a></li>
                     <li class="nav-item"><a class="nav-link page-link-nav admin-only" href="#" data-page="pengguna"><i class="bi bi-person-gear me-1"></i>Pengguna</a></li>
                     <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="akun"><i class="bi bi-key me-1"></i>Ganti Password</a></li>
                 </ul>
@@ -127,6 +129,82 @@
                     </div>
                     <p id="pegawai-kosong" class="text-center text-muted py-4 mb-0" hidden>
                         <i class="bi bi-inbox fs-2 d-block mb-2"></i>Tidak ada data pegawai.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SURAT MASUK -->
+        <section id="page-surat-masuk" class="page" hidden>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-envelope-arrow-down me-2 text-primary"></i>Surat Masuk</h2>
+                <button id="btn-tambah-sm" class="btn btn-primary admin-only"><i class="bi bi-plus-lg me-1"></i>Catat Surat Masuk</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input id="cari-sm" type="search" class="form-control" placeholder="Cari nomor agenda, nomor surat, pengirim, perihal...">
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge text-bg-secondary" id="jumlah-sm"></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>No. Agenda</th><th>Nomor Surat</th><th>Tanggal</th><th>Pengirim</th>
+                                <th>Klasifikasi</th><th>Perihal</th><th>Sifat</th><th>Status</th>
+                                <th class="text-end">Aksi</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody-sm"></tbody>
+                        </table>
+                    </div>
+                    <p id="sm-kosong" class="text-center text-muted py-4 mb-0" hidden>
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>Belum ada surat masuk.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SURAT KELUAR -->
+        <section id="page-surat-keluar" class="page" hidden>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-envelope-arrow-up me-2 text-primary"></i>Surat Keluar</h2>
+                <button id="btn-tambah-sk" class="btn btn-primary admin-only"><i class="bi bi-plus-lg me-1"></i>Catat Surat Keluar</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input id="cari-sk" type="search" class="form-control" placeholder="Cari nomor agenda, nomor surat, tujuan, perihal...">
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge text-bg-secondary" id="jumlah-sk"></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>No. Agenda</th><th>Nomor Surat</th><th>Tanggal</th><th>Tujuan</th>
+                                <th>Klasifikasi</th><th>Perihal</th><th>Sifat</th><th>Status</th>
+                                <th class="text-end">Aksi</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody-sk"></tbody>
+                        </table>
+                    </div>
+                    <p id="sk-kosong" class="text-center text-muted py-4 mb-0" hidden>
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>Belum ada surat keluar.
                     </p>
                 </div>
             </div>
@@ -335,6 +413,90 @@
     </div>
 </div>
 
+<!-- ============ MODAL FORM SURAT (MASUK / KELUAR) ============ -->
+<div class="modal fade" id="modal-surat" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-envelope me-2"></i><span id="modal-surat-title">Catat Surat</span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-surat" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="alert alert-info small py-2">
+                        <i class="bi bi-magic me-1"></i>
+                        <b>Nomor agenda dibuat otomatis</b> (gaya Srikandi): urut/kode klasifikasi/tahun, contoh <code>001/UM/2026</code>.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Nomor Surat <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="m-nomor" placeholder="mis. 421.2/123/SMUI/2026" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Klasifikasi Surat <span class="text-danger">*</span></label>
+                            <select class="form-select" id="m-klasifikasi" required>
+                                <option value="">- pilih kode klasifikasi -</option>
+                                <option value="UM">UM — Umum</option>
+                                <option value="PT">PT — Permintaan / Penugasan</option>
+                                <option value="SN">SN — Sikap / Tanggapan</option>
+                                <option value="KP">KP — Keputusan / Kondisi</option>
+                                <option value="UN">UN — Perjanjian / Undangan</option>
+                                <option value="SI">SI — Surat Istimewa</option>
+                                <option value="PG">PG — Pengumuman</option>
+                                <option value="PU">PU — Peraturan</option>
+                                <option value="KR">KR — Konsep / Risalah</option>
+                                <option value="RH">RH — Laporan</option>
+                                <option value="RT">RT — Nota Dinas / Berita Acara</option>
+                                <option value="ST">ST — Sambutan / Surat Tugas</option>
+                                <option value="PM">PM — Penunjukan / Pelantikan</option>
+                                <option value="PR">PR — Pemberitahuan</option>
+                                <option value="SS">SS — Statistik / Soal</option>
+                                <option value="DU">DU — Nota Dinas U</option>
+                                <option value="LD">LD — Buku / Pedoman</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Tanggal Surat <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="m-tanggal" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold" id="label-pihak">Pengirim <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="m-pihak" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Perihal <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="m-perihal" required maxlength="255">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Sifat Surat</label>
+                            <select class="form-select" id="m-sifat">
+                                <option>Biasa</option><option>Penting</option><option>Segera</option><option>Rahasia</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select class="form-select" id="m-status"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Catatan</label>
+                            <textarea class="form-control" id="m-catatan" rows="2" maxlength="255" placeholder="opsional, mis. disposisi Kepala Sekolah"></textarea>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-semibold">Lampiran (scan/softcopy, opsional)</label>
+                            <input type="file" class="form-control" id="m-lampiran" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx">
+                            <div class="form-text" id="m-lampiran-info"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3" id="toast-area"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -366,6 +528,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-<script src="/js/app.js?v=3"></script>
+<script src="/js/app.js?v=4"></script>
 </body>
 </html>

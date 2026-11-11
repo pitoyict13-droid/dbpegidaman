@@ -5,8 +5,9 @@ Sistem informasi kepegawaian berbasis **Java (Spring Boot)** dengan keamanan log
 ## Fitur
 
 - 🔐 **Login JWT** — token bertanda tangan HMAC-SHA256, masa berlaku 12 jam, logout mencabut token (blacklist)
-- 👥 **CRUD Data Pegawai** — NIP, nama, jabatan, status (PNS/PPPK/GTT/PTT/Honorer), mapel, pendidikan, tanggal lahir/masuk, telepon, email, gaji pokok, alamat
-- 📊 **Dashboard** — statistik total pegawai, sebaran status kepegawaian, sebaran jabatan
+- 👥 **CRUD Data Pegawai** — NIP, nama, jabatan, status (Pegawai Tetap / Pegawai Tidak Tetap), mapel, pendidikan, tanggal lahir/masuk, telepon, email, gaji pokok, alamat
+- 📊 **Dashboard** — statistik total pegawai, sebaran status kepegawaian, sebaran jabatan, jumlah arsip surat masuk & keluar
+- 📨 **Manajemen Persuratan** — arsip surat masuk & surat keluar dengan **penomoran agenda otomatis bergaya Srikandi (Kalsel)** (`urut/kode klasifikasi/tahun`, contoh `001/UM/2026`), 17 kode klasifikasi arsip (UM, PT, SN, KP, UN, dst.), sifat surat (Biasa/Penting/Segera/Rahasia), status tindak lanjut, dan **lampiran file** (scan/softcopy surat, maks 10 MB) yang bisa diunduh
 - 🛡 **Peran pengguna** — `ADMIN` (kelola semua data & pengguna) dan `STAFF` (hanya melihat)
 - 📥 **Import Excel** — unduh template `.xlsx`, isi data pegawai, lalu unggah untuk masuk massal ke database (Apache POI, dengan validasi baris per baris dan laporan baris yang gagal)
 - 🔎 Pencarian pegawai, ubah password, kelola pengguna (khusus admin)
@@ -67,6 +68,12 @@ Buka browser: **http://localhost:8080**
 | POST | `/api/pegawai` | ADMIN | Tambah pegawai |
 | PUT | `/api/pegawai/{id}` | ADMIN | Ubah pegawai |
 | DELETE | `/api/pegawai/{id}` | ADMIN | Hapus pegawai |
+| GET | `/api/surat?tipe=MASUK&cari=...` | login | Daftar arsip surat (tipe: MASUK/KELUAR, + pencarian) |
+| GET | `/api/surat/{id}` | login | Detail arsip surat |
+| GET | `/api/surat/{id}/lampiran` | login | Unduh lampiran surat |
+| POST | `/api/surat` | ADMIN | Catat surat baru (form-data + lampiran opsional) — nomor agenda otomatis |
+| PUT | `/api/surat/{id}` | ADMIN | Ubah arsip surat |
+| DELETE | `/api/surat/{id}` | ADMIN | Hapus arsip surat |
 | GET/POST/DELETE | `/api/users` | ADMIN | Kelola pengguna |
 | POST | `/api/users/change-password` | login | Ganti password sendiri |
 

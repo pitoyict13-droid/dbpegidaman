@@ -32,6 +32,8 @@ spring:
           no-cache: true
 
 app:
+  # Folder penyimpanan lampiran surat (arsip persuratan)
+  upload-dir: ${UPLOAD_DIR:uploads}
   jwt:
     # Ganti secret ini di produksi (minimal 32 karakter). Lebih aman via environment variable JWT_SECRET
     secret: ${JWT_SECRET:KunciRahasiaSMPUnggulanIdamanBanjarbaru2026GantiDiProduksi!}

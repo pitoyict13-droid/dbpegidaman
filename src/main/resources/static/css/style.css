@@ -40,6 +40,11 @@ body {
 .stat-success   { background: linear-gradient(135deg, #198754, #146c43); }
 .stat-warning   { background: linear-gradient(135deg, #f0ad4e, #d68d10); }
 .stat-info      { background: linear-gradient(135deg, #0dcaf0, #0aa2c0); }
+.stat-secondary { background: linear-gradient(135deg, #6c757d, #565e64); }
+.stat-danger    { background: linear-gradient(135deg, #dc3545, #b02a37); }
+
+/* Tabel surat: perihal jangan terlalu lebar */
+.surat-perihal { max-width: 260px; }
 
 /* ---------- GRAFIK BAR ---------- */
 .bar-row { display: grid; grid-template-columns: 9rem 1fr 2.6rem; gap: .6rem; align-items: center; font-size: .83rem; margin-bottom: .55rem; }

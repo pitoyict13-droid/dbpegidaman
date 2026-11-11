@@ -53,6 +53,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/pegawai/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/pegawai/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/pegawai/**").hasRole("ADMIN")
+                        // Tambah/ubah/hapus surat (persuratan): khusus ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/surat/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/surat/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/surat/**").hasRole("ADMIN")
                         // Sisanya (termasuk lihat data pegawai): wajib login
                         .anyRequest().authenticated()
                 )
