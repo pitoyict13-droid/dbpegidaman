@@ -24,6 +24,9 @@ const state = {
 
 const $ = (sel) => document.querySelector(sel);
 
+/* Tandai ke skrip fallback bahwa app.js dimuat dengan sukses */
+window.__APP_READY = true;
+
 /* ---------- komponen Bootstrap ---------- */
 const modalPegawai = () => new bootstrap.Modal("#modal-pegawai");
 const modalUser = () => new bootstrap.Modal("#modal-user");

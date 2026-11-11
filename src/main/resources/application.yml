@@ -25,6 +25,11 @@ spring:
   output:
     ansi:
       enabled: always
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-cache: true
 
 app:
   jwt:

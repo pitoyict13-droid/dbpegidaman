@@ -338,6 +338,34 @@
 <div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3" id="toast-area"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* Fallback: jika app.js gagal dimuat (cache/CDN bermasalah),
+   login tetap berfungsi lewat pemanggilan API langsung. */
+document.addEventListener("DOMContentLoaded", function () {
+    var form = document.getElementById("login-form");
+    if (!form) return;
+    form.addEventListener("submit", async function (e) {
+        if (window.__APP_READY) return; // app.js normal -> serahkan ke sana
+        e.preventDefault();
+        try {
+            var res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    username: document.getElementById("username").value.trim(),
+                    password: document.getElementById("password").value
+                })
+            });
+            var body = await res.json();
+            if (!res.ok) { alert(body.message || "Login gagal"); return; }
+            localStorage.setItem("jwt_token", body.token);
+            location.reload();
+        } catch (ex) {
+            alert("Tidak dapat menghubungi server: " + ex.message);
+        }
+    });
+});
+</script>
 <script src="/js/app.js?v=3"></script>
 </body>
 </html>
