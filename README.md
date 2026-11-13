@@ -67,6 +67,51 @@ Aplikasi juga bisa dijalankan dengan database file H2 bawaan (data tersimpan di 
   -Dspring-boot.run.arguments=--spring.datasource.password=
 ```
 
+## Deploy Online Gratis (Render + Neon)
+
+Agar pengurus sekolah bisa membuka aplikasi dari mana saja, kombinasi gratis yang disarankan:
+
+| Komponen | Layanan | Biaya |
+|---|---|---|
+| Web service (Docker) | [Render](https://render.com) free plan | Rp 0 |
+| Database PostgreSQL | [Neon](https://neon.tech) free tier | Rp 0 |
+
+Repo ini sudah berisi `Dockerfile` dan `render.yaml` — tidak ada yang perlu diubah kodenya.
+
+### Langkah-langkah
+
+1. **Push repo ini ke GitHub** (fork/repo milik sekolah):
+   ```bash
+   git push origin main
+   ```
+2. **Buat database di [Neon](https://neon.tech)** (perlu akun GitHub/Google, tanpa kartu kredit):
+   - Create Project → pilih region terdekat (mis. Singapore) → catat **host**, **nama database** (default `neondb`), **username** (mis. `neondb_owner`), dan **password**.
+3. **Deploy di [Render](https://render.com)**:
+   - **New → Web Service → Build and deploy from a Git repository** → pilih repo GitHub tadi → connect.
+   - Render mendeteksi `Dockerfile` otomatis (runtime: Docker). Pilih **Free** plan.
+   - Pada bagian **Environment Variables**, isi:
+     | Key | Nilai |
+     |---|---|
+     | `DB_HOST` | host Neon, mis. `ep-xxxx-1234.ap-southeast-1.aws.neon.tech` |
+     | `DB_PORT` | `5432` |
+     | `DB_NAME` | `neondb` |
+     | `DB_USERNAME` | `neondb_owner` |
+     | `DB_PASSWORD` | password dari Neon |
+     | `DB_PARAMS` | `?sslmode=require` |
+     | `JWT_SECRET` | isi string acak panjang (min. 32 karakter) |
+   - (Alternatif: **New → Blueprint** dan pilih repo ini — `render.yaml` akan menanyakan nilai-nilai di atas secara otomatis; `JWT_SECRET` dibuat otomatis.)
+4. Klik **Deploy**, tunggu hingga status **Live**. URL aplikasi akan berupa `https://<nama-service>.onrender.com`.
+5. Buka URL tsb → login `admin` / `admin123` → **segera ganti password** (menu Ganti Password) dan isi **Profil Sekolah**.
+
+### Catatan penting (free tier)
+
+- **Server tidur saat 15 menit tidak ada kunjungan** — pembukaan pertama setelah tidur butuh ~30–60 detik (subsequent cepat). Cocok untuk sekolah kecil; bila perlu selalu-on, naik ke paid plan atau pakai VPS sekolah.
+- **Neon free ≈ 0.5 GB** — cukup untuk puluhan ribu siswa/pegawai.
+- **Lampiran surat** tersimpan di filesystem container yang *ephemeral*: file hilang saat re-deploy/restart. Untuk arsip permanen, backup berkala `uploads/` (atau jalankan di server sekolah).
+- `PORT` diisi otomatis oleh Render — jangan diatur manual.
+- Pastikan `JWT_SECRET` diisi nilai acak (bawaan aplikasi tidak aman untuk produksi) — di Blueprint dibuat otomatis.
+- Kalau nanti ingin pindah host (Koyeb, Railway, VPS sekolah): cukup set env var `SPRING_DATASOURCE_URL` & `JWT_SECRET`, Dockerfile berlaku di mana pun.
+
 ## Login Awal
 
 | Username | Password | Peran |

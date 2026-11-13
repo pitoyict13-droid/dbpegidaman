@@ -1,0 +1,11 @@
+.git
+.github
+data
+uploads
+target
+*.log
+PANDUAN.html
+.gitignore
+Dockerfile
+.dockerignore
+render.yaml

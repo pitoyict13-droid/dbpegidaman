@@ -1,5 +1,6 @@
 server:
-  port: 8080
+  # Hosting cloud (Render dkk.) menyuntikkan PORT otomatis; lokal tetap 8080
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -9,8 +10,9 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   datasource:
-    # Ganti sesuai konfigurasi PostgreSQL di sekolah
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:kepegawaian_smp}
+    # Bisa dioverride penuh via SPRING_DATASOURCE_URL, atau per-bagian via DB_HOST/DB_PORT/DB_NAME/DB_PARAMS
+    # Contoh Neon (butuh SSL): set DB_PARAMS=?sslmode=require
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:kepegawaian_smp}${DB_PARAMS:}}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     hikari:

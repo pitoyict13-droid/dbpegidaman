@@ -1,0 +1,24 @@
+# Blueprint Render.com — deploy 1-klik (New → Blueprint → pilih repo ini)
+# Catatan: plan "free" akan tidur setelah 15 menit tanpa kunjungan (buka lagi ~1 menit).
+services:
+  - type: web
+    name: dapodik-smp-unggulan-idaman
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /manifest.json
+    envVars:
+      - key: DB_HOST
+        sync: false          # diisi dari host Neon, mis. ep-xxxx.ap-southeast-1.aws.neon.tech
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_NAME
+        sync: false          # nama database di Neon, mis. neondb
+      - key: DB_USERNAME
+        sync: false          # user Neon, mis. neondb_owner
+      - key: DB_PASSWORD
+        sync: false          # password Neon
+      - key: DB_PARAMS
+        value: "?sslmode=require"
+      - key: JWT_SECRET
+        generateValue: true  # Render membuat secret acak
