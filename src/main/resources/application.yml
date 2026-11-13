@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: kepegawaian-smp
+    name: dapodik-smp
   servlet:
     multipart:
       max-file-size: 10MB

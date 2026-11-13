@@ -1,5 +1,5 @@
 /* =========================================================
- * Aplikasi Kepegawaian SMP Unggulan Idaman Banjarbaru
+ * Sistem Informasi Data Sekolah (Dapodik) — SMP Unggulan Idaman
  * Frontend Bootstrap 5 — memanggil REST API backend + JWT.
  * ========================================================= */
 "use strict";
@@ -15,6 +15,10 @@ const API = {
     changePassword: "/api/users/change-password",
     surat: "/api/surat",
     disposisiSaya: "/api/disposisi-saya",
+    profilSekolah: "/api/profil-sekolah",
+    pesertaDidik: "/api/peserta-didik",
+    saranaPrasarana: "/api/sarana-prasarana",
+    kesiswaan: "/api/kesiswaan",
 };
 
 const state = {
@@ -25,6 +29,13 @@ const state = {
     surat: { MASUK: [], KELUAR: [] },
     editSuratId: null,
     notifikasi: [],
+    profilSekolah: null,
+    pesertaDidikList: [],
+    saranaList: [],
+    kesiswaanList: [],
+    editSiswaId: null,
+    editSarprasId: null,
+    editKesiswaanId: null,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -37,6 +48,9 @@ const modalPegawai = () => new bootstrap.Modal("#modal-pegawai");
 const modalUser = () => new bootstrap.Modal("#modal-user");
 const modalImport = () => new bootstrap.Modal("#modal-import");
 const modalSurat = () => new bootstrap.Modal("#modal-surat");
+const modalSiswa = () => new bootstrap.Modal("#modal-siswa");
+const modalKesiswaan = () => new bootstrap.Modal("#modal-kesiswaan");
+const modalSarpras = () => new bootstrap.Modal("#modal-sarpras");
 
 /* Klasifikasi surat gaya Srikandi (kode -> nama) untuk tampilan tabel */
 const NAMA_KLASIFIKASI = {
@@ -120,6 +134,10 @@ async function masukAplikasi() {
     const admin = state.user.role === "ADMIN";
     document.querySelectorAll(".admin-only").forEach((el) => (el.style.display = admin ? "" : "none"));
 
+    await muatProfilSekolah();
+    await muatPesertaDidik();
+    await muatKesiswaan();
+    await muatSaranaPrasarana();
     await muatPegawai();
     await muatSemuaSurat();
     if (admin) await muatUsers();
@@ -158,6 +176,10 @@ document.querySelectorAll(".page-link-nav").forEach((link) => {
         const nav = document.getElementById("mainNav");
         if (nav.classList.contains("show")) bootstrap.Collapse.getOrCreateInstance(nav).hide();
         if (link.dataset.page === "pengguna" && state.user?.role === "ADMIN") muatUsers();
+        if (link.dataset.page === "profil-sekolah") muatProfilSekolah();
+        if (link.dataset.page === "peserta-didik") renderPesertaDidik();
+        if (link.dataset.page === "kesiswaan") renderKesiswaan();
+        if (link.dataset.page === "sarana-prasarana") renderSarpras();
         if (link.dataset.page === "surat-masuk") muatSurat("MASUK");
         if (link.dataset.page === "surat-keluar") muatSurat("KELUAR");
         if (link.dataset.page === "rekap-surat") renderRekap();
@@ -289,6 +311,495 @@ $("#form-pegawai").addEventListener("submit", async (e) => {
 });
 
 $("#btn-tambah").addEventListener("click", bukaModalTambah);
+
+/* ---------- profil sekolah ---------- */
+const numOrNull = (v) => (v === "" || v == null ? null : Number(v));
+const strOrNull = (v) => {
+    const s = String(v ?? "").trim();
+    return s === "" ? null : s;
+};
+
+async function muatProfilSekolah() {
+    try {
+        const p = await api(API.profilSekolah);
+        state.profilSekolah = p;
+        isiFormProfil(p);
+    } catch (e) {
+        showToast("Gagal memuat profil sekolah: " + e.message, "danger");
+    }
+}
+
+function isiFormProfil(p) {
+    const set = (id, nilai) => { const el = $(id); if (el) el.value = nilai ?? ""; };
+    set("#pf-nama-sekolah", p.namaSekolah);
+    set("#pf-npsn", p.npsn);
+    set("#pf-nss", p.nss);
+    set("#pf-status-sekolah", p.statusSekolah || "Negeri");
+    set("#pf-bentuk", p.bentukPendidikan || "SMP");
+    set("#pf-akreditasi", p.statusAkreditasi || "");
+    set("#pf-tahun-berdiri", p.tahunBerdiri);
+    set("#pf-kurikulum", p.kurikulum || "");
+    set("#pf-waktu-belajar", p.waktuBelajar || "");
+    set("#pf-alamat", p.alamat);
+    set("#pf-kelurahan", p.kelurahan);
+    set("#pf-kecamatan", p.kecamatan);
+    set("#pf-kota", p.kotaKabupaten);
+    set("#pf-provinsi", p.provinsi);
+    set("#pf-kode-pos", p.kodePos);
+    set("#pf-telepon", p.telepon);
+    set("#pf-email", p.email);
+    set("#pf-website", p.website);
+    set("#pf-kepsek", p.namaKepalaSekolah);
+    set("#pf-nip-kepsek", p.nipKepalaSekolah);
+    set("#pf-luas-tanah", p.luasTanah);
+    set("#pf-luas-bangunan", p.luasBangunan);
+    set("#pf-daya-listrik", p.dayaListrik);
+    set("#pf-sumber-listrik", p.sumberListrik || "");
+    set("#pf-internet", p.aksesInternet || "");
+    set("#pf-kecepatan-internet", p.kecepatanInternet);
+    set("#pf-visi", p.visi);
+    set("#pf-misi", p.misi);
+
+    // STAFF hanya melihat: kunci semua input & tombol simpan mengikuti admin-only
+    const isAdmin = state.user?.role === "ADMIN";
+    document.querySelectorAll("#form-profil input, #form-profil select, #form-profil textarea")
+        .forEach((el) => (el.disabled = !isAdmin));
+}
+
+$("#form-profil").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (state.user?.role !== "ADMIN") return;
+    const payload = {
+        namaSekolah: $("#pf-nama-sekolah").value.trim(),
+        npsn: strOrNull($("#pf-npsn").value),
+        nss: strOrNull($("#pf-nss").value),
+        statusSekolah: $("#pf-status-sekolah").value,
+        bentukPendidikan: $("#pf-bentuk").value,
+        statusAkreditasi: strOrNull($("#pf-akreditasi").value),
+        tahunBerdiri: numOrNull($("#pf-tahun-berdiri").value),
+        kurikulum: strOrNull($("#pf-kurikulum").value),
+        waktuBelajar: strOrNull($("#pf-waktu-belajar").value),
+        alamat: strOrNull($("#pf-alamat").value),
+        kelurahan: strOrNull($("#pf-kelurahan").value),
+        kecamatan: strOrNull($("#pf-kecamatan").value),
+        kotaKabupaten: strOrNull($("#pf-kota").value),
+        provinsi: strOrNull($("#pf-provinsi").value),
+        kodePos: strOrNull($("#pf-kode-pos").value),
+        telepon: strOrNull($("#pf-telepon").value),
+        email: strOrNull($("#pf-email").value),
+        website: strOrNull($("#pf-website").value),
+        namaKepalaSekolah: strOrNull($("#pf-kepsek").value),
+        nipKepalaSekolah: strOrNull($("#pf-nip-kepsek").value),
+        luasTanah: numOrNull($("#pf-luas-tanah").value),
+        luasBangunan: numOrNull($("#pf-luas-bangunan").value),
+        dayaListrik: numOrNull($("#pf-daya-listrik").value),
+        sumberListrik: strOrNull($("#pf-sumber-listrik").value),
+        aksesInternet: strOrNull($("#pf-internet").value),
+        kecepatanInternet: strOrNull($("#pf-kecepatan-internet").value),
+        visi: strOrNull($("#pf-visi").value),
+        misi: strOrNull($("#pf-misi").value),
+    };
+    try {
+        state.profilSekolah = await api(API.profilSekolah, {method: "PUT", body: JSON.stringify(payload)});
+        isiFormProfil(state.profilSekolah);
+        showToast("Profil sekolah tersimpan", "success");
+    } catch (ex) {
+        showToast(ex.message, "danger");
+    }
+});
+
+/* ---------- peserta didik ---------- */
+async function muatPesertaDidik() {
+    try {
+        state.pesertaDidikList = await api(API.pesertaDidik);
+    } catch (e) {
+        showToast("Gagal memuat peserta didik: " + e.message, "danger");
+        state.pesertaDidikList = [];
+    }
+    renderPesertaDidik();
+    renderDashboard();
+}
+
+function renderPesertaDidik() {
+    const filter = $("#cari-siswa").value.trim().toLowerCase();
+    const data = state.pesertaDidikList.filter(
+        (p) => !filter || [p.nama, p.nisn, p.nis, p.kelas].some((v) => (v || "").toLowerCase().includes(filter))
+    );
+    const tbody = $("#tbody-siswa");
+    tbody.innerHTML = "";
+    $("#siswa-kosong").hidden = data.length > 0;
+    $("#jumlah-siswa").textContent = data.length + " siswa";
+
+    const admin = state.user?.role === "ADMIN";
+    const warnaStatus = {"Aktif": "success", "Lulus": "primary", "Pindah": "warning text-dark", "Keluar": "danger", "Meninggal": "dark"};
+    data.forEach((p, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${esc(p.nisn || "-")}<br><small class="text-muted">NIS: ${esc(p.nis || "-")}</small></td>
+            <td><span class="fw-semibold">${esc(p.nama)}</span></td>
+            <td>${p.jenisKelamin === "L" ? "L" : p.jenisKelamin === "P" ? "P" : "-"}</td>
+            <td>${esc(p.kelas || "-")}</td>
+            <td>${p.angkatan ?? "-"}</td>
+            <td><span class="badge text-bg-${warnaStatus[p.status] || "secondary"}">${esc(p.status || "Aktif")}</span></td>
+            <td class="text-end">
+                ${admin ? `
+                <button class="btn btn-sm btn-outline-primary" data-aksi="edit" data-id="${p.id}" title="Ubah"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" data-aksi="hapus" data-id="${p.id}" title="Hapus"><i class="bi bi-trash"></i></button>`
+                : `<span class="text-muted">—</span>`}
+            </td>`;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("button[data-aksi]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const id = Number(btn.dataset.id);
+            if (btn.dataset.aksi === "edit") bukaModalSiswa(id);
+            else hapusSiswa(id);
+        });
+    });
+}
+
+$("#cari-siswa").addEventListener("input", renderPesertaDidik);
+
+async function hapusSiswa(id) {
+    const p = state.pesertaDidikList.find((x) => x.id === id);
+    if (!confirm("Hapus peserta didik \"" + (p?.nama || id) + "\"?")) return;
+    try {
+        await api(API.pesertaDidik + "/" + id, {method: "DELETE"});
+        showToast("Data peserta didik dihapus", "success");
+        await muatPesertaDidik();
+    } catch (e) {
+        showToast(e.message, "danger");
+    }
+}
+
+function isiDatalistSiswa() {
+    $("#daftar-siswa-list").innerHTML = state.pesertaDidikList
+        .map((p) => `<option value="${esc(p.nama)}"></option>`).join("");
+}
+
+function bukaModalSiswa(id) {
+    state.editSiswaId = id || null;
+    const form = $("#form-siswa");
+    form.reset();
+    const p = id ? state.pesertaDidikList.find((x) => x.id === id) : null;
+    $("#modal-siswa-title").textContent = p ? "Ubah Peserta Didik — " + p.nama : "Tambah Peserta Didik";
+    if (p) {
+        $("#s-nisn").value = p.nisn || "";
+        $("#s-nis").value = p.nis || "";
+        $("#s-nama").value = p.nama || "";
+        $("#s-jk").value = p.jenisKelamin || "";
+        $("#s-agama").value = p.agama || "";
+        $("#s-tempat-lahir").value = p.tempatLahir || "";
+        $("#s-tanggal-lahir").value = p.tanggalLahir || "";
+        $("#s-alamat").value = p.alamat || "";
+        $("#s-kelurahan").value = p.kelurahan || "";
+        $("#s-kecamatan").value = p.kecamatan || "";
+        $("#s-kota").value = p.kotaKabupaten || "";
+        $("#s-hp").value = p.nomorHp || "";
+        $("#s-nama-ayah").value = p.namaAyah || "";
+        $("#s-nama-ibu").value = p.namaIbu || "";
+        $("#s-pekerjaan-ayah").value = p.pekerjaanAyah || "";
+        $("#s-pekerjaan-ibu").value = p.pekerjaanIbu || "";
+        $("#s-penghasilan").value = p.penghasilanOrangTua || "";
+        $("#s-hp-ortu").value = p.nomorHpOrangTua || "";
+        $("#s-kelas").value = p.kelas || "";
+        $("#s-angkatan").value = p.angkatan ?? "";
+        $("#s-status").value = p.status || "Aktif";
+        $("#s-tanggal-masuk").value = p.tanggalMasuk || "";
+        $("#s-catatan").value = p.catatan || "";
+    } else {
+        $("#s-status").value = "Aktif";
+        $("#s-tanggal-masuk").value = new Date().toISOString().slice(0, 10);
+    }
+    modalSiswa().show();
+}
+
+$("#btn-tambah-siswa").addEventListener("click", () => bukaModalSiswa(null));
+
+$("#form-siswa").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        nisn: strOrNull($("#s-nisn").value),
+        nis: strOrNull($("#s-nis").value),
+        nama: $("#s-nama").value.trim(),
+        jenisKelamin: strOrNull($("#s-jk").value),
+        agama: strOrNull($("#s-agama").value),
+        tempatLahir: strOrNull($("#s-tempat-lahir").value),
+        tanggalLahir: strOrNull($("#s-tanggal-lahir").value),
+        alamat: strOrNull($("#s-alamat").value),
+        kelurahan: strOrNull($("#s-kelurahan").value),
+        kecamatan: strOrNull($("#s-kecamatan").value),
+        kotaKabupaten: strOrNull($("#s-kota").value),
+        nomorHp: strOrNull($("#s-hp").value),
+        namaAyah: strOrNull($("#s-nama-ayah").value),
+        namaIbu: strOrNull($("#s-nama-ibu").value),
+        pekerjaanAyah: strOrNull($("#s-pekerjaan-ayah").value),
+        pekerjaanIbu: strOrNull($("#s-pekerjaan-ibu").value),
+        penghasilanOrangTua: strOrNull($("#s-penghasilan").value),
+        nomorHpOrangTua: strOrNull($("#s-hp-ortu").value),
+        kelas: strOrNull($("#s-kelas").value),
+        angkatan: numOrNull($("#s-angkatan").value),
+        status: $("#s-status").value,
+        tanggalMasuk: strOrNull($("#s-tanggal-masuk").value),
+        catatan: strOrNull($("#s-catatan").value),
+    };
+    try {
+        if (state.editSiswaId) {
+            await api(API.pesertaDidik + "/" + state.editSiswaId, {method: "PUT", body: JSON.stringify(payload)});
+            showToast("Data peserta didik diperbarui", "success");
+        } else {
+            await api(API.pesertaDidik, {method: "POST", body: JSON.stringify(payload)});
+            showToast("Peserta didik baru ditambahkan", "success");
+        }
+        bootstrap.Modal.getInstance($("#modal-siswa")).hide();
+        await muatPesertaDidik();
+    } catch (ex) {
+        showToast(ex.message, "danger");
+    }
+});
+
+/* ---------- kesiswaan ---------- */
+async function muatKesiswaan() {
+    try {
+        state.kesiswaanList = await api(API.kesiswaan);
+    } catch (e) {
+        showToast("Gagal memuat data kesiswaan: " + e.message, "danger");
+        state.kesiswaanList = [];
+    }
+    renderKesiswaan();
+    renderDashboard();
+}
+
+function renderKesiswaan() {
+    const filter = $("#cari-kesiswaan").value.trim().toLowerCase();
+    const data = state.kesiswaanList.filter(
+        (k) => !filter || [k.namaSiswa, k.judul, k.kelas, k.jenis].some((v) => (v || "").toLowerCase().includes(filter))
+    );
+    const tbody = $("#tbody-kesiswaan");
+    tbody.innerHTML = "";
+    $("#kesiswaan-kosong").hidden = data.length > 0;
+    $("#jumlah-kesiswaan").textContent = data.length + " catatan";
+
+    const admin = state.user?.role === "ADMIN";
+    const warnaJenis = {
+        "Prestasi": "success", "Pelanggaran": "danger", "Ekstrakurikuler": "info text-dark",
+        "Beasiswa": "primary", "Lainnya": "secondary",
+    };
+    data.forEach((k, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${tglIndo(k.tanggal)}</td>
+            <td><span class="badge text-bg-${warnaJenis[k.jenis] || "secondary"}">${esc(k.jenis)}</span></td>
+            <td class="fw-semibold">${esc(k.namaSiswa)}</td>
+            <td>${esc(k.kelas || "-")}</td>
+            <td>${esc(k.judul)}${k.poin != null ? `<br><small class="text-muted">Poin: ${k.poin}</small>` : ""}</td>
+            <td>${esc(k.tingkat || "-")}</td>
+            <td class="text-end">
+                ${admin ? `
+                <button class="btn btn-sm btn-outline-primary" data-aksi="edit" data-id="${k.id}" title="Ubah"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" data-aksi="hapus" data-id="${k.id}" title="Hapus"><i class="bi bi-trash"></i></button>`
+                : `<span class="text-muted">—</span>`}
+            </td>`;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("button[data-aksi]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const id = Number(btn.dataset.id);
+            if (btn.dataset.aksi === "edit") bukaModalKesiswaan(id);
+            else hapusKesiswaan(id);
+        });
+    });
+}
+
+$("#cari-kesiswaan").addEventListener("input", renderKesiswaan);
+
+async function hapusKesiswaan(id) {
+    const k = state.kesiswaanList.find((x) => x.id === id);
+    if (!confirm("Hapus catatan kesiswaan \"" + (k?.judul || id) + "\"?")) return;
+    try {
+        await api(API.kesiswaan + "/" + id, {method: "DELETE"});
+        showToast("Catatan kesiswaan dihapus", "success");
+        await muatKesiswaan();
+    } catch (e) {
+        showToast(e.message, "danger");
+    }
+}
+
+function bukaModalKesiswaan(id) {
+    state.editKesiswaanId = id || null;
+    const form = $("#form-kesiswaan");
+    form.reset();
+    const k = id ? state.kesiswaanList.find((x) => x.id === id) : null;
+    $("#modal-kesiswaan-title").textContent = k ? "Ubah Catatan — " + k.judul : "Tambah Catatan Kesiswaan";
+    isiDatalistSiswa();
+    if (k) {
+        $("#k-jenis").value = k.jenis || "";
+        $("#k-nama-siswa").value = k.namaSiswa || "";
+        $("#k-kelas").value = k.kelas || "";
+        $("#k-judul").value = k.judul || "";
+        $("#k-tingkat").value = k.tingkat || "";
+        $("#k-tanggal").value = k.tanggal || "";
+        $("#k-poin").value = k.poin ?? "";
+        $("#k-keterangan").value = k.keterangan || "";
+    } else {
+        $("#k-tanggal").value = new Date().toISOString().slice(0, 10);
+    }
+    modalKesiswaan().show();
+}
+
+$("#btn-tambah-kesiswaan").addEventListener("click", () => bukaModalKesiswaan(null));
+
+$("#form-kesiswaan").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        jenis: $("#k-jenis").value,
+        namaSiswa: $("#k-nama-siswa").value.trim(),
+        kelas: strOrNull($("#k-kelas").value),
+        judul: $("#k-judul").value.trim(),
+        tingkat: strOrNull($("#k-tingkat").value),
+        tanggal: strOrNull($("#k-tanggal").value),
+        poin: numOrNull($("#k-poin").value),
+        keterangan: strOrNull($("#k-keterangan").value),
+    };
+    try {
+        if (state.editKesiswaanId) {
+            await api(API.kesiswaan + "/" + state.editKesiswaanId, {method: "PUT", body: JSON.stringify(payload)});
+            showToast("Catatan kesiswaan diperbarui", "success");
+        } else {
+            await api(API.kesiswaan, {method: "POST", body: JSON.stringify(payload)});
+            showToast("Catatan kesiswaan ditambahkan", "success");
+        }
+        bootstrap.Modal.getInstance($("#modal-kesiswaan")).hide();
+        await muatKesiswaan();
+    } catch (ex) {
+        showToast(ex.message, "danger");
+    }
+});
+
+/* ---------- sarana prasarana ---------- */
+async function muatSaranaPrasarana() {
+    try {
+        state.saranaList = await api(API.saranaPrasarana);
+    } catch (e) {
+        showToast("Gagal memuat sarana prasarana: " + e.message, "danger");
+        state.saranaList = [];
+    }
+    renderSarpras();
+    renderDashboard();
+}
+
+function renderSarpras() {
+    const filter = $("#cari-sarpras").value.trim().toLowerCase();
+    const kategori = $("#filter-kategori-sarpras").value;
+    const data = state.saranaList.filter((s) =>
+        (!kategori || s.kategori === kategori) &&
+        (!filter || [s.nama, s.kode, s.kategori].some((v) => (v || "").toLowerCase().includes(filter)))
+    );
+    const tbody = $("#tbody-sarpras");
+    tbody.innerHTML = "";
+    $("#sarpras-kosong").hidden = data.length > 0;
+    $("#jumlah-sarpras").textContent = data.length + " item";
+
+    const admin = state.user?.role === "ADMIN";
+    const warnaKondisi = {"Baik": "success", "Rusak Ringan": "warning text-dark", "Rusak Sedang": "warning text-dark", "Rusak Berat": "danger"};
+    data.forEach((s, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td><span class="badge text-bg-info text-dark">${esc(s.kategori)}</span></td>
+            <td><span class="fw-semibold">${esc(s.nama)}</span>${s.keterangan ? `<br><small class="text-muted">${esc(s.keterangan)}</small>` : ""}</td>
+            <td>${esc(s.kode || "-")}</td>
+            <td>${s.jumlah ?? "-"}</td>
+            <td><span class="badge text-bg-${warnaKondisi[s.kondisi] || "secondary"}">${esc(s.kondisi)}</span></td>
+            <td>${s.tahunPengadaan ?? "-"}</td>
+            <td class="text-end">
+                ${admin ? `
+                <button class="btn btn-sm btn-outline-primary" data-aksi="edit" data-id="${s.id}" title="Ubah"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" data-aksi="hapus" data-id="${s.id}" title="Hapus"><i class="bi bi-trash"></i></button>`
+                : `<span class="text-muted">—</span>`}
+            </td>`;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("button[data-aksi]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const id = Number(btn.dataset.id);
+            if (btn.dataset.aksi === "edit") bukaModalSarpras(id);
+            else hapusSarpras(id);
+        });
+    });
+}
+
+$("#cari-sarpras").addEventListener("input", renderSarpras);
+$("#filter-kategori-sarpras").addEventListener("change", renderSarpras);
+
+async function hapusSarpras(id) {
+    const s = state.saranaList.find((x) => x.id === id);
+    if (!confirm("Hapus sarana prasarana \"" + (s?.nama || id) + "\"?")) return;
+    try {
+        await api(API.saranaPrasarana + "/" + id, {method: "DELETE"});
+        showToast("Sarana prasarana dihapus", "success");
+        await muatSaranaPrasarana();
+    } catch (e) {
+        showToast(e.message, "danger");
+    }
+}
+
+function bukaModalSarpras(id) {
+    state.editSarprasId = id || null;
+    const form = $("#form-sarpras");
+    form.reset();
+    const s = id ? state.saranaList.find((x) => x.id === id) : null;
+    $("#modal-sarpras-title").textContent = s ? "Ubah Sarpras — " + s.nama : "Tambah Sarana Prasarana";
+    if (s) {
+        $("#sp-kategori").value = s.kategori || "";
+        $("#sp-nama").value = s.nama || "";
+        $("#sp-kode").value = s.kode || "";
+        $("#sp-jumlah").value = s.jumlah ?? "";
+        $("#sp-kondisi").value = s.kondisi || "Baik";
+        $("#sp-luas").value = s.luas ?? "";
+        $("#sp-tahun").value = s.tahunPengadaan ?? "";
+        $("#sp-sumber-dana").value = s.sumberDana || "";
+        $("#sp-keterangan").value = s.keterangan || "";
+    } else {
+        $("#sp-kondisi").value = "Baik";
+    }
+    modalSarpras().show();
+}
+
+$("#btn-tambah-sarpras").addEventListener("click", () => bukaModalSarpras(null));
+
+$("#form-sarpras").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        kategori: $("#sp-kategori").value,
+        nama: $("#sp-nama").value.trim(),
+        kode: strOrNull($("#sp-kode").value),
+        jumlah: numOrNull($("#sp-jumlah").value),
+        kondisi: $("#sp-kondisi").value,
+        luas: numOrNull($("#sp-luas").value),
+        tahunPengadaan: numOrNull($("#sp-tahun").value),
+        sumberDana: strOrNull($("#sp-sumber-dana").value),
+        keterangan: strOrNull($("#sp-keterangan").value),
+    };
+    try {
+        if (state.editSarprasId) {
+            await api(API.saranaPrasarana + "/" + state.editSarprasId, {method: "PUT", body: JSON.stringify(payload)});
+            showToast("Sarana prasarana diperbarui", "success");
+        } else {
+            await api(API.saranaPrasarana, {method: "POST", body: JSON.stringify(payload)});
+            showToast("Sarana prasarana ditambahkan", "success");
+        }
+        bootstrap.Modal.getInstance($("#modal-sarpras")).hide();
+        await muatSaranaPrasarana();
+    } catch (ex) {
+        showToast(ex.message, "danger");
+    }
+});
 
 /* ---------- persuratan (surat masuk & keluar) ---------- */
 async function muatSemuaSurat() {
@@ -868,6 +1379,8 @@ $("#btn-upload").addEventListener("click", async () => {
 /* ---------- dashboard ---------- */
 function renderDashboard() {
     const list = state.pegawaiList;
+    const siswaAktif = state.pesertaDidikList.filter((p) => (p.status || "Aktif") === "Aktif").length;
+    const prestasi = state.kesiswaanList.filter((k) => k.jenis === "Prestasi").length;
     const total = list.length;
     const guru = list.filter((p) => ["Guru", "Wali Kelas", "Kepala Sekolah", "Wakil Kepala Sekolah"].includes(p.jabatan)).length;
     const tendik = total - guru;
@@ -885,10 +1398,17 @@ function renderDashboard() {
         <div class="col-6 col-lg-3"><div class="stat-card stat-secondary p-3 d-flex justify-content-between align-items-center">
             <div><div class="num">${state.surat.MASUK.length}</div><div class="lbl">Arsip Surat Masuk</div></div><i class="bi bi-envelope-arrow-down ico"></i></div></div>
         <div class="col-6 col-lg-3"><div class="stat-card stat-danger p-3 d-flex justify-content-between align-items-center">
-            <div><div class="num">${state.surat.KELUAR.length}</div><div class="lbl">Arsip Surat Keluar</div></div><i class="bi bi-envelope-arrow-up ico"></i></div></div>`;
+            <div><div class="num">${state.surat.KELUAR.length}</div><div class="lbl">Arsip Surat Keluar</div></div><i class="bi bi-envelope-arrow-up ico"></i></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card stat-success p-3 d-flex justify-content-between align-items-center">
+            <div><div class="num">${siswaAktif}</div><div class="lbl">Peserta Didik Aktif</div></div><i class="bi bi-backpack2 ico"></i></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card stat-info p-3 d-flex justify-content-between align-items-center">
+            <div><div class="num">${state.saranaList.length}</div><div class="lbl">Item Sarana Prasarana</div></div><i class="bi bi-hammer ico"></i></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card stat-warning p-3 d-flex justify-content-between align-items-center">
+            <div><div class="num">${prestasi}</div><div class="lbl">Catatan Prestasi Siswa</div></div><i class="bi bi-trophy ico"></i></div></div>`;
 
     $("#chart-status").innerHTML = barChart(grupkan(list, "statusKepegawaian"));
     $("#chart-jabatan").innerHTML = barChart(grupkan(list, "jabatan"));
+    $("#chart-kelas").innerHTML = barChart(grupkan(state.pesertaDidikList.filter((p) => (p.status || "Aktif") === "Aktif"), "kelas"));
 }
 
 function grupkan(list, field) {

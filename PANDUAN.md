@@ -1,5 +1,5 @@
 # 📘 PANDUAN APLIKASI
-## Sistem Informasi Kepegawaian & Persuratan
+## Sistem Informasi Data Pokok Sekolah (Dapodik) & Persuratan
 ### SMP Unggulan Idaman Banjarbaru
 
 ---
@@ -109,8 +109,8 @@ Klik dua kali file .bat tersebut setiap pagi, biarkan jendelanya terbuka.
 
 | Peran | Hak akses |
 |---|---|
-| **ADMIN** | Mengelola semua data: pegawai, pengguna, surat, disposisi, laporan |
-| **STAFF** | Hanya **melihat** data + mengelola **disposisi miliknya sendiri** |
+| **ADMIN** | Mengelola semua data: profil sekolah, peserta didik, kesiswaan, sarana prasarana, pegawai, pengguna, surat, disposisi, laporan |
+| **STAFF** | Hanya **melihat** data (termasuk profil sekolah) + mengelola **disposisi miliknya sendiri** |
 
 ## B.2 Login & Keluar
 
@@ -131,9 +131,52 @@ Menu **Pengguna** → **Tambah Pengguna**:
 
 ## B.5 Dashboard
 
-Ringkasan otomatis: total pegawai, guru & pimpinan, tenaga kependidikan, pegawai tetap, jumlah arsip surat masuk & keluar, plus grafik sebaran status dan jabatan.
+Ringkasan otomatis: total pegawai, guru & pimpinan, tenaga kependidikan, pegawai tetap, **jumlah peserta didik aktif, item sarana prasarana & catatan prestasi**, jumlah arsip surat masuk & keluar, plus grafik sebaran status kepegawaian, jabatan, dan kelas peserta didik.
 
-## B.6 Data Pegawai
+## B.6 Profil Sekolah 🏫
+
+Menu **Profil Sekolah** menampilkan identitas lengkap sekolah (gaya Dapodik) — **bisa dilihat semua pengguna**, tetapi hanya **ADMIN** yang dapat mengubah.
+
+Data yang dikelola: nama sekolah, NPSN, NSS, status (Negeri/Swasta), bentuk pendidikan, akreditasi, tahun berdiri, kurikulum, waktu belajar, alamat lengkap & kontak, nama + NIP kepala sekolah, luas tanah/bangunan, daya listrik, sumber listrik, internet, serta **visi & misi**.
+
+**Cara ubah (ADMIN):** klik menu **Profil Sekolah** → edit isian → klik **💾 Simpan Profil**. Untuk pengguna STAFF, semua kolom terkunci otomatis.
+
+## B.7 Peserta Didik 🎒
+
+Menu **Peserta Didik** mengelola biodata siswa (gaya Dapodik).
+
+**Tambah:** tombol **+ Tambah Peserta Didik** → isi NISN/NIS (boleh kosong, tetapi tidak boleh kembar), nama (wajib), jenis kelamin, agama, tempat/tanggal lahir, alamat lengkap, data orang tua/wali, kelas (mis. `7A`), angkatan (mis. 2025), status, tanggal masuk → Simpan.
+
+**Cari:** ketik nama / NISN / NIS / kelas di kotak pencarian.
+
+**Ubah / Hapus:** tombol ✏️ / 🗑 pada baris siswa.
+
+> NISN dan NIS bersifat **unik** — sistem menolak jika kembar dengan siswa lain.
+
+## B.8 Kesiswaan 🏆
+
+Menu **Kesiswaan** mencatat hal-hal kesiswaan per peserta didik:
+
+| Jenis | Contoh isi | Keterangan |
+|---|---|---|
+| Prestasi | "Juara 1 Lomba Cipta Puisi Tingkat Provinsi" | isi juga **Tingkat** (Sekolah … Internasional) |
+| Pelanggaran | "Tidak mengerjakan PR" | isi **Poin Pelanggaran** bila dipakai |
+| Ekstrakurikuler | "Anggota Pramuka" | — |
+| Beasiswa | "Penerima PIP 2026" | — |
+
+**Tambah:** tombol **+ Tambah Catatan** → pilih jenis, ketik nama siswa (saran otomatis dari data peserta didik), judul/kegiatan, tingkat, tanggal, poin, keterangan → Simpan.
+
+Kolom **Cari** mencari nama siswa atau judul. Untuk edit: tombol ✏️ / 🗑.
+
+## B.9 Sarana Prasarana 🔨
+
+Menu **Sarana Prasarana** mengelola inventaris fisik sekolah (gaya Dapodik).
+
+**Tambah:** tombol **+ Tambah Sarpras** → pilih **Kategori** (Gedung, Ruang Kelas, Laboratorium, Perpustakaan, Ruang Kantor, Toilet/MCK, Lapangan/Olahraga, Alat Peraga/Peralatan, Furnitur/Mebel, Buku & Media, Lainnya), isi nama (wajib), kode inventaris, jumlah, **kondisi** (Baik / Rusak Ringan / Rusak Sedang / Rusak Berat), luas m², tahun dibangun/pengadaan, sumber dana (BOS/APBD/APBN/…) → Simpan.
+
+**Cari & filter:** kotak pencarian (nama/kode) dan dropdown kategori. Edit: tombol ✏️ / 🗑.
+
+## B.10 Data Pegawai
 
 **Tambah:** tombol **+ Tambah** → isi NIP (boleh kosong), nama, jenis kelamin, **Status Kepegawaian** (`Pegawai Tetap` / `Pegawai Tidak Tetap`), jabatan, mapel, pendidikan, tanggal, kontak, gaji, alamat → Simpan.
 
@@ -147,7 +190,7 @@ Ringkasan otomatis: total pegawai, guru & pimpinan, tenaga kependidikan, pegawai
 3. Klik **Import Excel** → pilih file → **Unggah**.
 4. Sistem menampilkan jumlah berhasil/gagal beserta alasannya per baris. Data yang gagal bisa diperbaiki lalu diunggah ulang — **tidak ada data ganda** karena NIP unik.
 
-## B.7 Surat Masuk 📩
+## B.11 Surat Masuk 📩
 
 Menu **Surat Masuk** → **Catat Surat Masuk**:
 
@@ -168,11 +211,11 @@ Nomor urut naik sendiri dan direset tiap tahun. **Tidak perlu diisi manual.**
 
 Tombol aksi pada tabel: 📤 Disposisi, ✏️ Ubah, 🗑 Hapus, 📎 Unduh lampiran.
 
-## B.8 Surat Keluar 📤
+## B.12 Surat Keluar 📤
 
 Sama seperti surat masuk, tetapi kolom **Pengirim** diganti **Tujuan** (kepada siapa surat dikirim) dan pilihan status menjadi **Terkirim / Arsip**. Nomor agenda juga otomatis (urutan terpisah dari surat masuk).
 
-## B.9 Disposisi Surat Masuk ✍️
+## B.13 Disposisi Surat Masuk ✍️
 
 1. Buka **Surat Masuk** → klik tombol **📤 (Disposisi)**.
 2. Tambah disposisi: **Diteruskan Kepada** (ketik nama pegawai — nama akan muncul saran otomatis), **Instruksi Kepala Sekolah**, **Batas Waktu**, status **Diproses/Selesai** → Simpan.
@@ -180,25 +223,25 @@ Sama seperti surat masuk, tetapi kolom **Pengirim** diganti **Tujuan** (kepada s
 
 > Sistem mencocokkan disposisi dengan akun pengguna melalui **Nama Lengkap** (lihat B.4).
 
-## B.10 Notifikasi "Disposisi Saya" 🔔
+## B.14 Notifikasi "Disposisi Saya" 🔔
 
 - Pegawai yang didisposisikan melihat **lonceng di navbar** dengan angka merah (jumlah yang perlu dikerjakan). Diperbarui otomatis tiap **60 detik**.
 - Klik lonceng / menu **Disposisi Saya** → daftar surat + instruksi + batas waktu (jika lewat batas, ditandai merah **"Terlambat"**).
 - Setelah selesai, klik **✅ Tandai Sudah Dikerjakan** → status berubah "Selesai" dan angka lonceng berkurang.
 - Disposisi **hanya terlihat oleh penerima** — data pegawai lain tetap aman.
 
-## B.11 Laporan Daftar Surat 📄
+## B.15 Laporan Daftar Surat 📄
 
 Di halaman Surat Masuk / Surat Keluar tersedia:
 
 - **Export Excel** — mengunduh *Buku Agenda Surat* berkop sekolah, kolom lengkap, plus tanda tangan Kepala Sekolah. Isi laporan mengikuti kata kunci pencarian yang aktif.
 - **Cetak / PDF** — membuka tampilan A4 *landscape* berkop (logo sekolah) siap cetak. Untuk PDF: di dialog cetak pilih tujuan **"Save as PDF" / "Simpan sebagai PDF"**.
 
-## B.12 Rekap Persuratan 📈
+## B.16 Rekap Persuratan 📈
 
 Menu **Rekap Surat**: pilih **tahun** → kartu total, grafik per klasifikasi (masuk & keluar), grafik per bulan, dan tabel rekap bulanan Januari–Desember yang siap dilampirkan ke laporan.
 
-## B.13 Masalah Umum (FAQ)
+## B.17 Masalah Umum (FAQ)
 
 | Masalah | Penyebab & solusi |
 |---|---|
@@ -210,7 +253,7 @@ Menu **Rekap Surat**: pilih **tahun** → kartu total, grafik per klasifikasi (m
 | Nomor agenda tidak berurutan | Wajar — nomor per kode klasifikasi & tipe surat dihitung terpisah (001/UM, 001/UN, dst.) |
 | HP tidak bisa membuka aplikasi | Pastikan satu WiFi dengan server, IP benar, firewall port 8080 dibuka |
 
-## B.14 Keamanan Data
+## B.18 Keamanan Data
 
 - Login memakai token **JWT** (berlaku 12 jam); tombol **Keluar** langsung mencabut token.
 - Data tersimpan di database **PostgreSQL** di komputer server — disarankan rutin mem-backup:
@@ -222,4 +265,4 @@ Menu **Rekap Surat**: pilih **tahun** → kartu total, grafik per klasifikasi (m
 
 ---
 
-*Panduan ini untuk Aplikasi Kepegawaian & Persuratan SMP Unggulan Idaman Banjarbaru — dibuat November 2026.*
+*Panduan ini untuk Sistem Informasi Data Pokok Sekolah (Dapodik) & Persuratan SMP Unggulan Idaman Banjarbaru — diperbarui November 2026.*

@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0d6efd">
-    <title>Kepegawaian — SMP Unggulan Idaman Banjarbaru</title>
+    <title>Data Sekolah (Dapodik) — SMP Unggulan Idaman Banjarbaru</title>
     <link rel="manifest" href="/manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=6">
+    <link rel="stylesheet" href="/css/style.css?v=8">
 </head>
 <body>
 
@@ -18,7 +18,7 @@
         <div class="card-body p-4 p-md-5 text-center">
             <img src="/image/logoPendidikan.png" alt="Logo SMP Unggulan Idaman Banjarbaru" class="logo-img mx-auto d-block mb-3">
             <h1 class="h4 fw-bold text-primary mb-1">SMP Unggulan Idaman Banjarbaru</h1>
-            <p class="text-muted small mb-4">Sistem Informasi Kepegawaian</p>
+            <p class="text-muted small mb-4">Sistem Informasi Data Pokok Sekolah (Dapodik)</p>
             <div id="login-error" class="alert alert-danger py-2 small text-start" hidden></div>
             <form id="login-form" novalidate>
                 <div class="form-floating mb-3">
@@ -43,13 +43,17 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
         <div class="container-fluid">
-            <span class="navbar-brand fw-bold"><img src="/image/logoPendidikan.png" alt="Logo" class="nav-logo me-2">Kepegawaian SMP Unggulan Idaman</span>
+            <span class="navbar-brand fw-bold"><img src="/image/logoPendidikan.png" alt="Logo" class="nav-logo me-2">Data Sekolah SMP Unggulan Idaman</span>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link page-link-nav active" href="#" data-page="dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="profil-sekolah"><i class="bi bi-building me-1"></i>Profil Sekolah</a></li>
+                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="peserta-didik"><i class="bi bi-backpack2 me-1"></i>Peserta Didik</a></li>
+                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="kesiswaan"><i class="bi bi-trophy me-1"></i>Kesiswaan</a></li>
+                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="sarana-prasarana"><i class="bi bi-hammer me-1"></i>Sarana Prasarana</a></li>
                     <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="pegawai"><i class="bi bi-people me-1"></i>Data Pegawai</a></li>
                     <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="surat-masuk"><i class="bi bi-envelope-arrow-down me-1"></i>Surat Masuk</a></li>
                     <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="surat-keluar"><i class="bi bi-envelope-arrow-up me-1"></i>Surat Keluar</a></li>
@@ -78,7 +82,7 @@
             </div>
             <div class="row g-3" id="stats"></div>
             <div class="row g-3 mt-1">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <h3 class="h6 fw-bold mb-3"><i class="bi bi-pie-chart me-1 text-primary"></i>Sebaran Status Kepegawaian</h3>
@@ -86,13 +90,312 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <h3 class="h6 fw-bold mb-3"><i class="bi bi-bar-chart me-1 text-primary"></i>Sebaran Jabatan</h3>
                             <div id="chart-jabatan"></div>
                         </div>
                     </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold mb-3"><i class="bi bi-mortarboard me-1 text-primary"></i>Sebaran Peserta Didik per Kelas</h3>
+                            <div id="chart-kelas"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFIL SEKOLAH -->
+        <section id="page-profil-sekolah" class="page" hidden>
+            <form id="form-profil">
+                <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                    <h2 class="h4 mb-0"><i class="bi bi-building me-2 text-primary"></i>Profil Sekolah</h2>
+                    <button type="submit" class="btn btn-primary admin-only"><i class="bi bi-check-lg me-1"></i>Simpan Profil</button>
+                </div>
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold text-primary mb-3"><i class="bi bi-info-circle me-1"></i>Identitas Sekolah</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Nama Sekolah <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="pf-nama-sekolah" required maxlength="150">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">NPSN</label>
+                                <input type="text" class="form-control" id="pf-npsn" inputmode="numeric" maxlength="20">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">NSS</label>
+                                <input type="text" class="form-control" id="pf-nss" inputmode="numeric" maxlength="30">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Status Sekolah</label>
+                                <select class="form-select" id="pf-status-sekolah">
+                                    <option value="Negeri">Negeri</option>
+                                    <option value="Swasta">Swasta</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Bentuk Pendidikan</label>
+                                <select class="form-select" id="pf-bentuk">
+                                    <option>SMP</option><option>MTs</option><option>SMA</option><option>MA</option>
+                                    <option>SMK</option><option>SD</option><option>Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Akreditasi</label>
+                                <select class="form-select" id="pf-akreditasi">
+                                    <option value="">- belum -</option>
+                                    <option>A</option><option>B</option><option>C</option><option>Belum Terakreditasi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Tahun Berdiri</label>
+                                <input type="number" class="form-control" id="pf-tahun-berdiri" min="1900" max="2100">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Kurikulum</label>
+                                <select class="form-select" id="pf-kurikulum">
+                                    <option value="">- pilih -</option>
+                                    <option>Kurikulum Merdeka</option><option>Kurikulum 2013 (K13)</option><option>KTSP</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Waktu Belajar</label>
+                                <select class="form-select" id="pf-waktu-belajar">
+                                    <option value="">- pilih -</option>
+                                    <option>Pagi</option><option>Siang</option><option>Full Day</option><option>Semi Full Day</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold text-primary mb-3"><i class="bi bi-geo-alt me-1"></i>Alamat &amp; Kontak</h3>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Alamat (Jalan)</label>
+                                <input type="text" class="form-control" id="pf-alamat" maxlength="255">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Kelurahan/Desa</label>
+                                <input type="text" class="form-control" id="pf-kelurahan" maxlength="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Kecamatan</label>
+                                <input type="text" class="form-control" id="pf-kecamatan" maxlength="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Kabupaten/Kota</label>
+                                <input type="text" class="form-control" id="pf-kota" maxlength="100">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Provinsi</label>
+                                <input type="text" class="form-control" id="pf-provinsi" maxlength="100">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label small fw-semibold">Kode Pos</label>
+                                <input type="text" class="form-control" id="pf-kode-pos" maxlength="10">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Telepon</label>
+                                <input type="tel" class="form-control" id="pf-telepon" maxlength="30">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Email</label>
+                                <input type="email" class="form-control" id="pf-email" maxlength="100">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Website</label>
+                                <input type="url" class="form-control" id="pf-website" maxlength="100" placeholder="https://...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold text-primary mb-3"><i class="bi bi-person-badge me-1"></i>Kepala Sekolah &amp; Sarana Umum</h3>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Nama Kepala Sekolah</label>
+                                <input type="text" class="form-control" id="pf-kepsek" maxlength="150">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">NIP Kepala Sekolah</label>
+                                <input type="text" class="form-control" id="pf-nip-kepsek" inputmode="numeric" maxlength="30">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Luas Tanah (m²)</label>
+                                <input type="number" class="form-control" id="pf-luas-tanah" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Luas Bangunan (m²)</label>
+                                <input type="number" class="form-control" id="pf-luas-bangunan" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Daya Listrik (VA)</label>
+                                <input type="number" class="form-control" id="pf-daya-listrik" min="0">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Sumber Listrik</label>
+                                <select class="form-select" id="pf-sumber-listrik">
+                                    <option value="">- pilih -</option>
+                                    <option>PLN</option><option>Genset</option><option>Tenaga Surya</option><option>Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label small fw-semibold">Internet</label>
+                                <select class="form-select" id="pf-internet">
+                                    <option value="">-</option>
+                                    <option>Ya</option><option>Tidak</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label small fw-semibold">Kecepatan</label>
+                                <input type="text" class="form-control" id="pf-kecepatan-internet" maxlength="50" placeholder="mis. 20 Mbps">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h6 fw-bold text-primary mb-3"><i class="bi bi-eye me-1"></i>Visi &amp; Misi</h3>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Visi</label>
+                                <textarea class="form-control" id="pf-visi" rows="2" maxlength="1000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Misi</label>
+                                <textarea class="form-control" id="pf-misi" rows="3" maxlength="1500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- PESERTA DIDIK -->
+        <section id="page-peserta-didik" class="page" hidden>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-backpack2 me-2 text-primary"></i>Peserta Didik</h2>
+                <button id="btn-tambah-siswa" class="btn btn-primary admin-only"><i class="bi bi-plus-lg me-1"></i>Tambah Peserta Didik</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input id="cari-siswa" type="search" class="form-control" placeholder="Cari nama peserta didik, NISN, NIS...">
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge text-bg-secondary" id="jumlah-siswa"></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>No</th><th>NISN / NIS</th><th>Nama</th><th>L/P</th><th>Kelas</th>
+                                <th>Angkatan</th><th>Status</th><th class="text-end">Aksi</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody-siswa"></tbody>
+                        </table>
+                    </div>
+                    <p id="siswa-kosong" class="text-center text-muted py-4 mb-0" hidden>
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>Belum ada data peserta didik.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KESISWAAN -->
+        <section id="page-kesiswaan" class="page" hidden>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-trophy me-2 text-primary"></i>Kesiswaan</h2>
+                <button id="btn-tambah-kesiswaan" class="btn btn-primary admin-only"><i class="bi bi-plus-lg me-1"></i>Tambah Catatan</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input id="cari-kesiswaan" type="search" class="form-control" placeholder="Cari nama siswa atau judul...">
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge text-bg-secondary" id="jumlah-kesiswaan"></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>No</th><th>Tanggal</th><th>Jenis</th><th>Nama Siswa</th><th>Kelas</th>
+                                <th>Judul / Kegiatan</th><th>Tingkat</th><th class="text-end">Aksi</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody-kesiswaan"></tbody>
+                        </table>
+                    </div>
+                    <p id="kesiswaan-kosong" class="text-center text-muted py-4 mb-0" hidden>
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>Belum ada catatan kesiswaan.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SARANA PRASARANA -->
+        <section id="page-sarana-prasarana" class="page" hidden>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+                <h2 class="h4 mb-0"><i class="bi bi-hammer me-2 text-primary"></i>Sarana Prasarana</h2>
+                <button id="btn-tambah-sarpras" class="btn btn-primary admin-only"><i class="bi bi-plus-lg me-1"></i>Tambah Sarpras</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input id="cari-sarpras" type="search" class="form-control" placeholder="Cari nama sarana prasarana...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="filter-kategori-sarpras" class="form-select">
+                                <option value="">Semua kategori</option>
+                                <option>Gedung</option><option>Ruang Kelas</option><option>Laboratorium</option>
+                                <option>Perpustakaan</option><option>Ruang Kantor</option><option>Toilet/MCK</option>
+                                <option>Lapangan/Olahraga</option><option>Alat Peraga/Peralatan</option><option>Furnitur/Mebel</option>
+                                <option>Buku &amp; Media</option><option>Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="badge text-bg-secondary" id="jumlah-sarpras"></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>No</th><th>Kategori</th><th>Nama</th><th>Kode</th><th>Jumlah</th>
+                                <th>Kondisi</th><th>Tahun</th><th class="text-end">Aksi</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody-sarpras"></tbody>
+                        </table>
+                    </div>
+                    <p id="sarpras-kosong" class="text-center text-muted py-4 mb-0" hidden>
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>Belum ada data sarana prasarana.
+                    </p>
                 </div>
             </div>
         </section>
@@ -459,6 +762,273 @@
     </div>
 </div>
 
+<!-- ============ MODAL FORM PESERTA DIDIK ============ -->
+<div class="modal fade" id="modal-siswa" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-backpack2 me-2"></i><span id="modal-siswa-title">Tambah Peserta Didik</span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-siswa">
+                <div class="modal-body">
+                    <h6 class="fw-bold text-primary"><i class="bi bi-person-vcard me-1"></i>Data Diri</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">NISN</label>
+                            <input type="text" class="form-control" id="s-nisn" inputmode="numeric" maxlength="20">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">NIS</label>
+                            <input type="text" class="form-control" id="s-nis" inputmode="numeric" maxlength="20">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Nama <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="s-nama" required maxlength="150">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Jenis Kelamin</label>
+                            <select class="form-select" id="s-jk">
+                                <option value="">- pilih -</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Agama</label>
+                            <select class="form-select" id="s-agama">
+                                <option value="">- pilih -</option>
+                                <option>Islam</option><option>Kristen</option><option>Katolik</option>
+                                <option>Hindu</option><option>Buddha</option><option>Konghucu</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Tempat Lahir</label>
+                            <input type="text" class="form-control" id="s-tempat-lahir" maxlength="100">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Tanggal Lahir</label>
+                            <input type="date" class="form-control" id="s-tanggal-lahir">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Alamat</label>
+                            <input type="text" class="form-control" id="s-alamat" maxlength="255">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Kelurahan</label>
+                            <input type="text" class="form-control" id="s-kelurahan" maxlength="100">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Kecamatan</label>
+                            <input type="text" class="form-control" id="s-kecamatan" maxlength="100">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Kab/Kota</label>
+                            <input type="text" class="form-control" id="s-kota" maxlength="100">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">No. HP Siswa</label>
+                            <input type="tel" class="form-control" id="s-hp" maxlength="25">
+                        </div>
+                    </div>
+                    <h6 class="fw-bold text-primary mt-4"><i class="bi bi-people me-1"></i>Orang Tua / Wali</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Nama Ayah / Wali</label>
+                            <input type="text" class="form-control" id="s-nama-ayah" maxlength="150">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Nama Ibu / Wali</label>
+                            <input type="text" class="form-control" id="s-nama-ibu" maxlength="150">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Pekerjaan Ayah</label>
+                            <input type="text" class="form-control" id="s-pekerjaan-ayah" maxlength="50" placeholder="mis. Buruh, PNS, Wiraswasta">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Pekerjaan Ibu</label>
+                            <input type="text" class="form-control" id="s-pekerjaan-ibu" maxlength="50">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Penghasilan Orang Tua</label>
+                            <select class="form-select" id="s-penghasilan">
+                                <option value="">- pilih -</option>
+                                <option>&lt; 500 Ribu</option><option>500 Ribu - 1 Juta</option><option>1 - 2 Juta</option>
+                                <option>2 - 5 Juta</option><option>5 - 10 Juta</option><option>&gt; 10 Juta</option><option>Tidak Berpenghasilan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">No. HP Orang Tua</label>
+                            <input type="tel" class="form-control" id="s-hp-ortu" maxlength="25">
+                        </div>
+                    </div>
+                    <h6 class="fw-bold text-primary mt-4"><i class="bi bi-mortarboard me-1"></i>Data Sekolah</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Kelas</label>
+                            <input type="text" class="form-control" id="s-kelas" maxlength="10" placeholder="mis. 7A">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Angkatan (Tahun Masuk)</label>
+                            <input type="number" class="form-control" id="s-angkatan" min="1990" max="2100" placeholder="mis. 2025">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select class="form-select" id="s-status">
+                                <option>Aktif</option><option>Lulus</option><option>Pindah</option><option>Keluar</option><option>Meninggal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Tanggal Masuk</label>
+                            <input type="date" class="form-control" id="s-tanggal-masuk">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Catatan</label>
+                            <input type="text" class="form-control" id="s-catatan" maxlength="255" placeholder="opsional">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============ MODAL FORM KESISWAAN ============ -->
+<div class="modal fade" id="modal-kesiswaan" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-trophy me-2"></i><span id="modal-kesiswaan-title">Tambah Catatan Kesiswaan</span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-kesiswaan">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Jenis <span class="text-danger">*</span></label>
+                            <select class="form-select" id="k-jenis" required>
+                                <option value="">- pilih -</option>
+                                <option>Prestasi</option><option>Pelanggaran</option><option>Ekstrakurikuler</option>
+                                <option>Beasiswa</option><option>Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-semibold">Nama Siswa <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="k-nama-siswa" list="daftar-siswa-list" required maxlength="150">
+                            <datalist id="daftar-siswa-list"></datalist>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Kelas</label>
+                            <input type="text" class="form-control" id="k-kelas" maxlength="10" placeholder="mis. 7A">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Judul / Kegiatan <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="k-judul" required maxlength="255" placeholder="mis. Juara 1 Olimpiade Matematika Tingkat Provinsi">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Tingkat</label>
+                            <select class="form-select" id="k-tingkat">
+                                <option value="">- tidak ada -</option>
+                                <option>Sekolah</option><option>Kecamatan</option><option>Kabupaten/Kota</option>
+                                <option>Provinsi</option><option>Nasional</option><option>Internasional</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Tanggal</label>
+                            <input type="date" class="form-control" id="k-tanggal">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Poin Pelanggaran</label>
+                            <input type="number" class="form-control" id="k-poin" min="0" placeholder="khusus pelanggaran">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Keterangan</label>
+                            <textarea class="form-control" id="k-keterangan" rows="2" maxlength="500"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============ MODAL FORM SARANA PRASARANA ============ -->
+<div class="modal fade" id="modal-sarpras" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-hammer me-2"></i><span id="modal-sarpras-title">Tambah Sarana Prasarana</span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="form-sarpras">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Kategori <span class="text-danger">*</span></label>
+                            <select class="form-select" id="sp-kategori" required>
+                                <option value="">- pilih -</option>
+                                <option>Gedung</option><option>Ruang Kelas</option><option>Laboratorium</option>
+                                <option>Perpustakaan</option><option>Ruang Kantor</option><option>Toilet/MCK</option>
+                                <option>Lapangan/Olahraga</option><option>Alat Peraga/Peralatan</option><option>Furnitur/Mebel</option>
+                                <option>Buku &amp; Media</option><option>Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-semibold">Nama <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="sp-nama" required maxlength="150" placeholder="mis. Ruang Kelas VII-A">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Kode / No. Inventaris</label>
+                            <input type="text" class="form-control" id="sp-kode" maxlength="50">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Jumlah</label>
+                            <input type="number" class="form-control" id="sp-jumlah" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Kondisi <span class="text-danger">*</span></label>
+                            <select class="form-select" id="sp-kondisi" required>
+                                <option>Baik</option><option>Rusak Ringan</option><option>Rusak Sedang</option><option>Rusak Berat</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Luas (m²)</label>
+                            <input type="number" class="form-control" id="sp-luas" min="0" step="0.01">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Tahun Dibangun/Pengadaan</label>
+                            <input type="number" class="form-control" id="sp-tahun" min="1900" max="2100">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Sumber Dana</label>
+                            <select class="form-select" id="sp-sumber-dana">
+                                <option value="">- pilih -</option>
+                                <option>BOS</option><option>APBD</option><option>APBN</option><option>Dana Mandiri</option><option>Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Keterangan</label>
+                            <textarea class="form-control" id="sp-keterangan" rows="2" maxlength="500"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- ============ MODAL IMPORT EXCEL ============ -->
 <div class="modal fade" id="modal-import" tabindex="-1">
     <div class="modal-dialog">
@@ -650,6 +1220,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-<script src="/js/app.js?v=6"></script>
+<script src="/js/app.js?v=8"></script>
 </body>
 </html>

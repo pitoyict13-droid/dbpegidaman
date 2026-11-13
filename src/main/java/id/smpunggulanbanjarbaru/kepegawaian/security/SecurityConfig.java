@@ -53,6 +53,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/pegawai/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/pegawai/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/pegawai/**").hasRole("ADMIN")
+                        // Ubah profil sekolah: khusus ADMIN (lihat: semua yang login)
+                        .requestMatchers(HttpMethod.PUT, "/api/profil-sekolah/**").hasRole("ADMIN")
+                        // Tambah/ubah/hapus peserta didik: khusus ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/peserta-didik/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/peserta-didik/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/peserta-didik/**").hasRole("ADMIN")
+                        // Tambah/ubah/hapus sarana prasarana: khusus ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/sarana-prasarana/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/sarana-prasarana/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/sarana-prasarana/**").hasRole("ADMIN")
+                        // Tambah/ubah/hapus data kesiswaan: khusus ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/kesiswaan/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/kesiswaan/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/kesiswaan/**").hasRole("ADMIN")
                         // Tambah/ubah/hapus surat (persuratan): khusus ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/surat/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/surat/**").hasRole("ADMIN")
