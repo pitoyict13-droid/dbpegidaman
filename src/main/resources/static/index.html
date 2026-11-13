@@ -8,7 +8,7 @@
     <link rel="manifest" href="/manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css?v=8">
+    <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
 
@@ -40,41 +40,56 @@
 
 <!-- ============ APLIKASI UTAMA ============ -->
 <div id="app-view" hidden>
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
-        <div class="container-fluid">
-            <span class="navbar-brand fw-bold"><img src="/image/logoPendidikan.png" alt="Logo" class="nav-logo me-2">Data Sekolah SMP Unggulan Idaman</span>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link page-link-nav active" href="#" data-page="dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="profil-sekolah"><i class="bi bi-building me-1"></i>Profil Sekolah</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="peserta-didik"><i class="bi bi-backpack2 me-1"></i>Peserta Didik</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="kesiswaan"><i class="bi bi-trophy me-1"></i>Kesiswaan</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="sarana-prasarana"><i class="bi bi-hammer me-1"></i>Sarana Prasarana</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="pegawai"><i class="bi bi-people me-1"></i>Data Pegawai</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="surat-masuk"><i class="bi bi-envelope-arrow-down me-1"></i>Surat Masuk</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="surat-keluar"><i class="bi bi-envelope-arrow-up me-1"></i>Surat Keluar</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="rekap-surat"><i class="bi bi-clipboard-data me-1"></i>Rekap Surat</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="disposisi-saya"><i class="bi bi-inbox me-1"></i>Disposisi Saya</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav admin-only" href="#" data-page="pengguna"><i class="bi bi-person-gear me-1"></i>Pengguna</a></li>
-                    <li class="nav-item"><a class="nav-link page-link-nav" href="#" data-page="akun"><i class="bi bi-key me-1"></i>Ganti Password</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-2">
-                    <button id="btn-notif" class="btn btn-sm btn-outline-light position-relative" title="Notifikasi disposisi">
+    <div class="app-shell">
+        <!-- SIDEBAR KIRI -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img src="/image/logoPendidikan.png" alt="Logo" class="sidebar-logo">
+                <div class="sb-brand-text">
+                    <div class="sb-title">Data Sekolah</div>
+                    <div class="sb-sub">SMP Unggulan Idaman</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sb-label">Utama</div>
+                <a href="#" class="sidebar-link page-link-nav active" data-page="dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="profil-sekolah"><i class="bi bi-building"></i><span>Profil Sekolah</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="peserta-didik"><i class="bi bi-backpack2"></i><span>Peserta Didik</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="kesiswaan"><i class="bi bi-trophy"></i><span>Kesiswaan</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="sarana-prasarana"><i class="bi bi-hammer"></i><span>Sarana Prasarana</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="pegawai"><i class="bi bi-people"></i><span>Data Pegawai</span></a>
+                <div class="sb-label">Persuratan</div>
+                <a href="#" class="sidebar-link page-link-nav" data-page="surat-masuk"><i class="bi bi-envelope-arrow-down"></i><span>Surat Masuk</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="surat-keluar"><i class="bi bi-envelope-arrow-up"></i><span>Surat Keluar</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="rekap-surat"><i class="bi bi-clipboard-data"></i><span>Rekap Surat</span></a>
+                <div class="sb-label">Lainnya</div>
+                <a href="#" class="sidebar-link page-link-nav" data-page="disposisi-saya"><i class="bi bi-inbox"></i><span>Disposisi Saya</span></a>
+                <a href="#" class="sidebar-link page-link-nav admin-only" data-page="pengguna"><i class="bi bi-person-gear"></i><span>Pengguna</span></a>
+                <a href="#" class="sidebar-link page-link-nav" data-page="akun"><i class="bi bi-key"></i><span>Ganti Password</span></a>
+            </nav>
+            <div class="sidebar-foot">Dapodik v2.0 &nbsp;•&nbsp; SMP Unggulan Idaman</div>
+        </aside>
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- AREA KONTEN -->
+        <div class="app-main">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <button id="btn-toggle-sidebar" class="btn btn-sm btn-outline-secondary d-lg-none" title="Buka/tutup menu">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <span class="topbar-title" id="topbar-title">Dashboard</span>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button id="btn-notif" class="btn btn-sm btn-outline-secondary position-relative" title="Notifikasi disposisi">
                         <i class="bi bi-bell"></i>
                         <span id="notif-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" hidden>0</span>
                     </button>
-                    <span class="badge text-bg-light text-primary" id="user-chip"></span>
-                    <button id="btn-logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Keluar</button>
+                    <span class="badge text-bg-light text-primary border" id="user-chip"></span>
+                    <button id="btn-logout" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-right me-1"></i>Keluar</button>
                 </div>
-            </div>
-        </div>
-    </nav>
+            </header>
 
-    <div class="container py-4" id="content">
+            <div class="content-wrap" id="content">
         <!-- DASHBOARD -->
         <section id="page-dashboard" class="page">
             <div class="d-flex align-items-center mb-4">
@@ -631,8 +646,10 @@
                 </div>
             </div>
         </section>
-    </div>
-</div>
+            </div><!-- /content-wrap -->
+        </div><!-- /app-main -->
+    </div><!-- /app-shell -->
+</div><!-- /app-view -->
 
 <!-- ============ MODAL FORM PEGAWAI ============ -->
 <div class="modal fade" id="modal-pegawai" tabindex="-1">
@@ -1220,6 +1237,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-<script src="/js/app.js?v=8"></script>
+<script src="/js/app.js?v=9"></script>
 </body>
 </html>

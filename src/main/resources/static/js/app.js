@@ -165,7 +165,18 @@ $("#btn-logout").addEventListener("click", async () => {
     showToast("Anda telah keluar", "secondary");
 });
 
-/* ---------- navigasi halaman ---------- */
+/* ---------- navigasi halaman (sidebar) ---------- */
+function tutupSidebarMobile() {
+    $("#sidebar").classList.remove("show");
+    $("#sidebar-backdrop").classList.remove("show");
+}
+
+$("#btn-toggle-sidebar").addEventListener("click", () => {
+    $("#sidebar").classList.toggle("show");
+    $("#sidebar-backdrop").classList.toggle("show", $("#sidebar").classList.contains("show"));
+});
+$("#sidebar-backdrop").addEventListener("click", tutupSidebarMobile);
+
 document.querySelectorAll(".page-link-nav").forEach((link) => {
     link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -173,8 +184,8 @@ document.querySelectorAll(".page-link-nav").forEach((link) => {
         link.classList.add("active");
         document.querySelectorAll(".page").forEach((p) => (p.hidden = true));
         $("#page-" + link.dataset.page).hidden = false;
-        const nav = document.getElementById("mainNav");
-        if (nav.classList.contains("show")) bootstrap.Collapse.getOrCreateInstance(nav).hide();
+        $("#topbar-title").textContent = link.textContent.trim();
+        tutupSidebarMobile();
         if (link.dataset.page === "pengguna" && state.user?.role === "ADMIN") muatUsers();
         if (link.dataset.page === "profil-sekolah") muatProfilSekolah();
         if (link.dataset.page === "peserta-didik") renderPesertaDidik();
