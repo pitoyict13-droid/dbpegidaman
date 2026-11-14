@@ -21,9 +21,11 @@ EXPOSE 8080
 
 # Heap & metaspace dibatasi agar aplikasi tetap hidup di container 256 MB
 # (Back4App Containers free tier: 0.25 CPU / 256 MB).
-# Hasil uji: RSS stabil ±214 MB setelah semua endpoint diakses.
+# Catatan: ReservedCodeCacheSize jangan terlalu kecil — dengan 16 MB code cache
+# sempat penuh dan JIT nonaktif saat import besar. 32 MB cukup untuk C1-only.
+# JAVA_OPTS di bawah juga dipakai untuk uji import 1.000 baris (RSS puncak ±235 MB).
 # preferIPv4Stack: Neon punya record IPv6; container tanpa rute IPv6 bisa gagal konek.
-ENV JAVA_OPTS="-Xms24m -Xmx96m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=16m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:MaxDirectMemorySize=8m -Djava.net.preferIPv4Stack=true"
+ENV JAVA_OPTS="-Xms24m -Xmx96m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:MaxDirectMemorySize=8m -Djava.net.preferIPv4Stack=true"
 
 # Shell form + exec agar JAVA_OPTS bisa dioverride dari dashboard hosting.
 CMD exec java $JAVA_OPTS -jar app.jar

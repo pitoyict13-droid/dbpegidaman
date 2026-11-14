@@ -90,6 +90,23 @@ public class SuratService {
         return repository.save(s);
     }
 
+    /**
+     * Membuat surat baru dari proses import Excel (tanpa lampiran).
+     * Tanggal catat bisa ditentukan (untuk arsip lama); null = hari ini.
+     */
+    @Transactional
+    public Surat tambahDariImport(String tipe, String nomorSurat, String klasifikasi, LocalDate tanggalSurat,
+                                  String pengirim, String tujuan, String perihal, String sifatSurat,
+                                  String statusSurat, String catatan, LocalDate tanggalCatat) {
+        String tipeFix = normalisasiTipe(tipe);
+        Surat s = new Surat();
+        s.setTipe(tipeFix);
+        isiData(s, nomorSurat, klasifikasi, tanggalSurat, pengirim, tujuan, perihal, sifatSurat, statusSurat, catatan);
+        s.setTanggalCatat(tanggalCatat != null ? tanggalCatat : LocalDate.now());
+        s.setNomorAgenda(buatNomorAgenda(tipeFix, klasifikasi));
+        return repository.save(s);
+    }
+
     @Transactional
     public Surat ubah(Long id, String nomorSurat, String klasifikasi, LocalDate tanggalSurat,
                       String pengirim, String tujuan, String perihal, String sifatSurat,

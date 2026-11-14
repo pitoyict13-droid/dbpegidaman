@@ -11,6 +11,9 @@ const API = {
     pegawai: "/api/pegawai",
     template: "/api/pegawai/template",
     importFile: "/api/pegawai/import",
+    importTemplate: (jenis) => `/api/import/template/${jenis}`,
+    importMulai: (jenis) => `/api/import/${jenis}`,
+    importStatus: (jobId) => `/api/import/status/${jobId}`,
     users: "/api/users",
     changePassword: "/api/users/change-password",
     surat: "/api/surat",
@@ -36,6 +39,9 @@ const state = {
     editSiswaId: null,
     editSarprasId: null,
     editKesiswaanId: null,
+    importJenis: null,
+    importTimer: null,
+    importJalan: false,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -47,6 +53,7 @@ window.__APP_READY = true;
 const modalPegawai = () => new bootstrap.Modal("#modal-pegawai");
 const modalUser = () => new bootstrap.Modal("#modal-user");
 const modalImport = () => new bootstrap.Modal("#modal-import");
+const modalImportData = () => bootstrap.Modal.getOrCreateInstance("#modal-import-data");
 const modalSurat = () => new bootstrap.Modal("#modal-surat");
 const modalSiswa = () => new bootstrap.Modal("#modal-siswa");
 const modalKesiswaan = () => new bootstrap.Modal("#modal-kesiswaan");
@@ -1386,6 +1393,222 @@ $("#btn-upload").addEventListener("click", async () => {
         btn.innerHTML = `<i class="bi bi-upload me-1"></i>Unggah`;
     }
 });
+
+/* ---------- import excel: siswa / sarpras / surat ---------- */
+const IMPORT_DATA = {
+    siswa: {
+        judul: "Peserta Didik",
+        namaFile: "template-siswa.xlsx",
+        muat: () => muatPesertaDidik(),
+    },
+    sarpras: {
+        judul: "Sarana Prasarana",
+        namaFile: "template-sarpras.xlsx",
+        muat: () => muatSaranaPrasarana(),
+    },
+    surat: {
+        judul: "Persuratan (Masuk & Keluar)",
+        namaFile: "template-surat.xlsx",
+        muat: async () => { await muatSemuaSurat(); await muatSurat("MASUK"); await muatSurat("KELUAR"); },
+    },
+};
+
+async function unduhTemplateJenis(jenis) {
+    const info = IMPORT_DATA[jenis];
+    if (!info) return;
+    try {
+        const res = await fetch(API.importTemplate(jenis), {
+            headers: {"Authorization": "Bearer " + state.token},
+        });
+        if (!res.ok) throw new Error("Gagal mengunduh template");
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = info.namaFile;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Template berhasil diunduh", "success");
+    } catch (e) {
+        showToast(e.message, "danger");
+    }
+}
+
+function bukaImportData(jenis) {
+    if (!IMPORT_DATA[jenis]) return;
+    if (state.importJalan) {
+        showToast("Masih ada proses import berjalan. Tunggu sampai selesai.", "warning");
+        return;
+    }
+    state.importJenis = jenis;
+    $("#import-judul").textContent = IMPORT_DATA[jenis].judul;
+    $("#file-import-data").value = "";
+    $("#import-progress").hidden = true;
+    const bar = $("#import-bar");
+    bar.className = "progress-bar progress-bar-striped progress-bar-animated";
+    bar.style.width = "0%";
+    bar.textContent = "0%";
+    $("#import-info").textContent = "";
+    $("#import-errors").classList.add("d-none");
+    $("#import-errors").innerHTML = "";
+    $("#import-hasil").classList.add("d-none");
+    $("#import-hasil").classList.remove("alert-warning");
+    $("#import-hasil").classList.add("alert-success");
+    $("#btn-upload-data").disabled = false;
+    $("#btn-upload-data").innerHTML = `<i class="bi bi-upload me-1"></i>Unggah`;
+    $("#btn-tutup-import-data").disabled = false;
+    $("#btn-close-import-data").disabled = false;
+    modalImportData().show();
+}
+
+async function unggahImportData() {
+    if (state.importJalan) return;
+    const fileInput = $("#file-import-data");
+    if (!fileInput.files.length) {
+        showToast("Silakan pilih file Excel terlebih dahulu", "warning");
+        return;
+    }
+    const btn = $("#btn-upload-data");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Mengunggah...`;
+    try {
+        const fd = new FormData();
+        fd.append("file", fileInput.files[0]);
+        const res = await fetch(API.importMulai(state.importJenis), {
+            method: "POST",
+            headers: {"Authorization": "Bearer " + state.token},
+            body: fd,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Gagal memulai import");
+
+        state.importJalan = true;
+        $("#import-progress").hidden = false;
+        $("#btn-tutup-import-data").disabled = true;
+        $("#btn-close-import-data").disabled = true;
+        $("#btn-upload-data").innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>Memproses...`;
+        $("#import-info").textContent = "Menyiapkan data...";
+        pantauImport(data.jobId);
+    } catch (e) {
+        showToast(e.message, "danger");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-upload me-1"></i>Unggah`;
+    }
+}
+
+function pantauImport(jobId) {
+    clearInterval(state.importTimer);
+    const cek = async () => {
+        try {
+            const res = await fetch(API.importStatus(jobId), {
+                headers: {"Authorization": "Bearer " + state.token},
+            });
+            const d = await res.json();
+            if (!res.ok) throw new Error(d.message || "Gagal memantau proses import");
+            renderProgresImport(d);
+            if (d.status === "SELESAI" || d.status === "GAGAL") {
+                clearInterval(state.importTimer);
+                state.importTimer = null;
+                state.importJalan = false;
+                selesaikanImport(d);
+            }
+        } catch (e) {
+            clearInterval(state.importTimer);
+            state.importTimer = null;
+            state.importJalan = false;
+            showToast(e.message, "danger");
+            $("#btn-tutup-import-data").disabled = false;
+            $("#btn-close-import-data").disabled = false;
+            $("#btn-upload-data").disabled = false;
+            $("#btn-upload-data").innerHTML = `<i class="bi bi-upload me-1"></i>Unggah`;
+        }
+    };
+    cek();
+    state.importTimer = setInterval(cek, 1500);
+}
+
+function renderProgresImport(d) {
+    const total = d.total || 0;
+    const persen = total > 0 ? Math.min(100, Math.round((d.diproses / total) * 100)) : 0;
+    const bar = $("#import-bar");
+    bar.style.width = persen + "%";
+    bar.textContent = persen + "%";
+    if (d.status === "MENUNGGU") {
+        $("#import-info").textContent = "Menunggu antrean...";
+        return;
+    }
+    $("#import-info").textContent =
+        `${d.diproses}/${total} baris diproses — ${d.berhasil} berhasil, ${d.gagal} gagal`;
+
+    const box = $("#import-errors");
+    box.innerHTML = "";
+    const daftar = d.pesanGagal || [];
+    if (daftar.length) {
+        const ul = document.createElement("ul");
+        ul.className = "mb-0 ps-3";
+        daftar.forEach((pesan) => {
+            const li = document.createElement("li");
+            li.textContent = pesan;
+            ul.appendChild(li);
+        });
+        if (d.pesanTerpotong) {
+            const li = document.createElement("li");
+            li.textContent = "… dan pesan lainnya (lihat ringkasan di atas).";
+            ul.appendChild(li);
+        }
+        box.appendChild(ul);
+        box.classList.remove("d-none");
+    } else {
+        box.classList.add("d-none");
+    }
+}
+
+function selesaikanImport(d) {
+    const bar = $("#import-bar");
+    const info = $("#import-info");
+    const hasil = $("#import-hasil");
+    bar.classList.remove("progress-bar-animated");
+
+    if (d.status === "GAGAL") {
+        bar.classList.remove("bg-success");
+        bar.classList.add("bg-danger");
+        bar.style.width = "100%";
+        bar.textContent = "Gagal";
+        info.textContent = d.pesan || "Import gagal.";
+        showToast(d.pesan || "Import gagal", "danger");
+    } else {
+        bar.classList.remove("bg-danger");
+        bar.classList.add("bg-success");
+        bar.style.width = "100%";
+        bar.textContent = "100%";
+        info.textContent = `${d.diproses} baris — ${d.berhasil} berhasil, ${d.gagal} gagal`;
+        hasil.classList.remove("d-none", "alert-success", "alert-warning");
+        hasil.classList.add(d.gagal > 0 ? "alert-warning" : "alert-success");
+        hasil.textContent = d.gagal > 0
+            ? `Import selesai. ${d.berhasil} baris masuk, ${d.gagal} baris dilewati (rincian di atas).`
+            : `Import selesai. ${d.berhasil} baris berhasil dimasukkan.`;
+        showToast(`Import selesai: ${d.berhasil} berhasil, ${d.gagal} gagal`,
+            d.gagal > 0 ? "warning" : "success");
+        const infoJenis = IMPORT_DATA[d.jenis];
+        if (infoJenis) infoJenis.muat().catch(() => {});
+    }
+
+    $("#btn-tutup-import-data").disabled = false;
+    $("#btn-close-import-data").disabled = false;
+    $("#btn-upload-data").disabled = false;
+    $("#btn-upload-data").innerHTML = `<i class="bi bi-upload me-1"></i>Unggah`;
+}
+
+$("#btn-import-siswa").addEventListener("click", () => bukaImportData("siswa"));
+$("#btn-template-siswa").addEventListener("click", () => unduhTemplateJenis("siswa"));
+$("#btn-import-sarpras").addEventListener("click", () => bukaImportData("sarpras"));
+$("#btn-template-sarpras").addEventListener("click", () => unduhTemplateJenis("sarpras"));
+$("#btn-import-sm").addEventListener("click", () => bukaImportData("surat"));
+$("#btn-template-sm").addEventListener("click", () => unduhTemplateJenis("surat"));
+$("#btn-import-sk").addEventListener("click", () => bukaImportData("surat"));
+$("#btn-template-sk").addEventListener("click", () => unduhTemplateJenis("surat"));
+$("#btn-download-template-data").addEventListener("click", () => unduhTemplateJenis(state.importJenis));
+$("#btn-upload-data").addEventListener("click", unggahImportData);
 
 /* ---------- dashboard ---------- */
 function renderDashboard() {

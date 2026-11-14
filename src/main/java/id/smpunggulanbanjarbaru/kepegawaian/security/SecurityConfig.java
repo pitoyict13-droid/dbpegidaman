@@ -71,6 +71,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/surat/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/surat/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/surat/**").hasRole("ADMIN")
+                        // Template & import massal (siswa, sarpras, surat): khusus ADMIN
+                        .requestMatchers("/api/import/**").hasRole("ADMIN")
                         // Sisanya (termasuk lihat data pegawai): wajib login
                         .anyRequest().authenticated()
                 )

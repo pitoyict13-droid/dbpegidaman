@@ -19,7 +19,7 @@ Sistem informasi data pokok sekolah **gaya Dapodik** (Data Pokok Pendidikan) ber
 - 🔔 **Notifikasi web "Disposisi Saya"** — pegawai yang didisposisikan melihat lonceng 🔔 di navbar (angka merah = jumlah yang perlu dikerjakan), diperbarui tiap 60 detik
 - 📈 **Rekap persuratan** — statistik per klasifikasi dan per bulan dengan filter tahun
 - 🛡 **Peran pengguna** — `ADMIN` (kelola semua data & pengguna) dan `STAFF` (hanya melihat)
-- 📥 **Import Excel** — unduh template `.xlsx`, isi data pegawai, unggah untuk masuk massal (Apache POI)
+- 📥 **Import Excel siswa, sarpras & persuratan** — unduh template `.xlsx` (sudah berisi sheet **Petunjuk**), isi data, lalu unggah. Import berjalan di latar belakang dengan **progress bar**, baris duplikat **dilewati & dilaporkan** (bukan ditimpa). Maks **8 MB / 1.000 baris** per file (Apache POI). Import pegawai tetap tersedia seperti sebelumnya.
 - 📱 Frontend responsif **Bootstrap 5** + PWA (bisa di-install di Android dari Chrome)
 
 ## Teknologi
@@ -144,6 +144,22 @@ Repo ini sudah berisi `Dockerfile` yang disetel agar muat di RAM 256 MB (heap 96
 
 > ⚠️ **Segera ganti password admin** setelah login pertama (menu *Ganti Password*). Akun admin otomatis dibuat hanya saat database masih kosong. Profil sekolah bawaan (nama "SMP Unggulan Idaman Banjarbaru") juga dibuat otomatis saat database masih kosong.
 
+## Import Excel (Siswa, Sarana Prasarana, Persuratan)
+
+Halaman **Peserta Didik**, **Sarana Prasarana**, **Surat Masuk**, dan **Surat Keluar** memiliki tombol **Template** dan **Import Excel** (khusus ADMIN).
+
+1. Klik **Template** untuk mengunduh file `.xlsx`. Sheet pertama adalah data; sheet **Petunjuk** berisi aturan pengisian dan contoh (contoh tidak ikut terimport).
+2. Isi data mulai **baris ke-2**; jangan mengubah/menggeser header.
+3. Simpan sebagai `.xlsx`, lalu klik **Import Excel** dan unggah.
+
+Ketentuan:
+
+- Maksimum **8 MB** dan **1.000 baris** per file. Untuk data lebih banyak, bagi menjadi beberapa file.
+- Hanya **satu proses import** yang boleh berjalan pada satu waktu; tunggu sampai selesai.
+- Baris **duplikat dilewati** dan dilaporkan: NISN/NIS untuk siswa, Nomor Surat untuk persuratan. Data lama tidak ditimpa.
+- Import berjalan **di latar belakang** dengan progress bar, sehingga tidak timeout meski server hosting gratis dan database cloud.
+- Nomor agenda surat (`001/UM/2026`) tetap dibuat otomatis; tanggal catat boleh dikosongkan (default hari ini).
+
 ## Struktur REST API
 
 | Metode | Endpoint | Akses | Keterangan |
@@ -172,6 +188,9 @@ Repo ini sudah berisi `Dockerfile` yang disetel agar muat di RAM 256 MB (heap 96
 | GET | `/api/pegawai/{id}` | login | Detail pegawai |
 | GET | `/api/pegawai/template` | login | Unduh template Excel (.xlsx) |
 | POST | `/api/pegawai/import` | ADMIN | Import massal dari file Excel |
+| GET | `/api/import/template/{jenis}` | ADMIN | Unduh template import (`siswa`, `sarpras`, `surat`) |
+| POST | `/api/import/{jenis}` | ADMIN | Mulai import Excel (async) — mengembalikan `jobId` |
+| GET | `/api/import/status/{jobId}` | ADMIN | Progres & hasil import (dipantau tiap 1,5 detik) |
 | POST | `/api/pegawai` | ADMIN | Tambah pegawai |
 | PUT | `/api/pegawai/{id}` | ADMIN | Ubah pegawai |
 | DELETE | `/api/pegawai/{id}` | ADMIN | Hapus pegawai |
