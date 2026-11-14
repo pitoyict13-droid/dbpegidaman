@@ -1207,6 +1207,315 @@ function cetakDaftarSurat(tipe) {
 $("#btn-cetak-sm").addEventListener("click", () => cetakDaftarSurat("MASUK"));
 $("#btn-cetak-sk").addEventListener("click", () => cetakDaftarSurat("KELUAR"));
 
+/* ---------- cetak data per halaman (siswa, sarpras, pegawai, dll.) ---------- */
+
+/** Kop surat memakai data Profil Sekolah (fallback ke identitas bawaan). */
+function kopSekolahHtml() {
+    const p = state.profilSekolah || {};
+    const nama = (p.namaSekolah || "SMP Unggulan Idaman Banjarbaru").toUpperCase();
+    const alamat = [p.alamat, p.kelurahan, p.kecamatan, p.kotaKabupaten, p.provinsi, p.kodePos]
+        .filter(Boolean).join(", ") || "Kota Banjarbaru, Kalimantan Selatan";
+    const kontak = [
+        p.npsn ? "NPSN " + p.npsn : null,
+        p.telepon ? "Telp. " + p.telepon : null,
+        p.email || null,
+        p.website || null,
+    ].filter(Boolean).join(" | ");
+    return `<div class="kop">
+        <img src="${location.origin}/image/logoPendidikan.png" alt="logo">
+        <div class="t">
+            <h1>${esc(nama)}</h1>
+            <p>${esc(alamat)}</p>
+            ${kontak ? `<p>${esc(kontak)}</p>` : ""}
+        </div>
+    </div>`;
+}
+
+/**
+ * Mencetak satu atau beberapa tabel data dengan kop sekolah.
+ * bagian = [{judul, kolom: [...], baris: [[...], ...]}]
+ */
+function cetakTabelData({judul, subjudul, bagian, landscape = true, tandaTangan = true}) {
+    const w = window.open("", "_blank", "width=1100,height=750");
+    if (!w) {
+        showToast("Popup diblokir browser — izinkan popup untuk mencetak", "warning");
+        return;
+    }
+    const p = state.profilSekolah || {};
+    const kota = p.kotaKabupaten || "Banjarbaru";
+    const tanggalCetak = new Date().toLocaleDateString("id-ID",
+        {day: "2-digit", month: "long", year: "numeric"});
+    const kepala = p.namaKepalaSekolah || "____________________________";
+    const nip = p.nipKepalaSekolah ? `<p>NIP. ${esc(p.nipKepalaSekolah)}</p>` : "";
+
+    const tabelHtml = bagian.map((b) => {
+        const head = b.kolom.map((k) => `<th>${esc(k)}</th>`).join("");
+        const isi = b.baris.length
+            ? b.baris.map((r) => `<tr>${r.map((c) => `<td>${esc(c ?? "-")}</td>`).join("")}</tr>`).join("")
+            : `<tr><td colspan="${b.kolom.length}" class="c text-muted">Belum ada data.</td></tr>`;
+        return `${b.judul ? `<h3>${esc(b.judul)}</h3>` : ""}
+            <table><thead><tr>${head}</tr></thead><tbody>${isi}</tbody></table>`;
+    }).join("");
+
+    w.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>${esc(judul)}</title>
+    <style>
+        body { font-family: "Times New Roman", serif; margin: 24px; color: #111; }
+        .kop { display: flex; align-items: center; gap: 14px; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 14px; }
+        .kop img { width: 78px; height: 78px; object-fit: contain; }
+        .kop .t { flex: 1; text-align: center; line-height: 1.3; }
+        .kop h1 { font-size: 20px; margin: 0; }
+        .kop p { margin: 2px 0 0; font-size: 12px; }
+        h2 { text-align: center; font-size: 15px; text-decoration: underline; margin: 4px 0 2px; }
+        .sub { text-align: center; font-size: 12px; margin: 0 0 14px; color: #333; }
+        h3 { font-size: 13px; margin: 18px 0 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 6px; }
+        th, td { border: 1px solid #333; padding: 4px 6px; vertical-align: top; white-space: pre-line; }
+        th { background: #e8eefc; text-align: center; }
+        thead { display: table-header-group; }
+        tr { page-break-inside: avoid; }
+        td:first-child { text-align: center; }
+        .c { text-align: center; }
+        .ttd { margin-top: 26px; float: right; width: 320px; text-align: center; font-size: 13px; }
+        .ttd p { margin: 2px 0; }
+        .ttd .sp { height: 64px; }
+        .info { clear: both; margin-top: 30px; font-size: 10px; color: #666; }
+        @media print { @page { size: A4 ${landscape ? "landscape" : "portrait"}; margin: 12mm; } }
+    </style></head><body>
+    ${kopSekolahHtml()}
+    <h2>${esc(judul)}</h2>
+    ${subjudul ? `<p class="sub">${esc(subjudul)}</p>` : ""}
+    ${tabelHtml}
+    ${tandaTangan ? `<div class="ttd">
+        <p>${esc(kota)}, ${tanggalCetak}</p>
+        <p>Kepala Sekolah,</p>
+        <div class="sp"></div>
+        <p><b>${esc(kepala)}</b></p>
+        ${nip}
+    </div>` : ""}
+    <div class="info">Dicetak oleh: ${esc(state.user?.username || "-")} • ${new Date().toLocaleString("id-ID")}</div>
+    </body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400); // tunggu logo termuat
+}
+
+function cetakDataSiswa() {
+    const filter = $("#cari-siswa").value.trim().toLowerCase();
+    const data = state.pesertaDidikList.filter(
+        (p) => !filter || [p.nama, p.nisn, p.nis, p.kelas].some((v) => (v || "").toLowerCase().includes(filter))
+    );
+    cetakTabelData({
+        judul: "DATA PESERTA DIDIK",
+        subjudul: (filter ? `Pencarian: "${filter}" — ` : "") + `${data.length} siswa`,
+        bagian: [{
+            kolom: ["No", "NISN", "NIS", "Nama", "JK", "Tempat, Tgl. Lahir", "Agama", "Kelas", "Angkatan", "Status", "No. HP"],
+            baris: data.map((p, i) => [
+                i + 1,
+                p.nisn || "-",
+                p.nis || "-",
+                p.nama,
+                p.jenisKelamin || "-",
+                [p.tempatLahir, p.tanggalLahir ? tglIndo(p.tanggalLahir) : null].filter(Boolean).join(", ") || "-",
+                p.agama || "-",
+                p.kelas || "-",
+                p.angkatan ?? "-",
+                p.status || "Aktif",
+                p.nomorHp || p.nomorHpOrangTua || "-",
+            ]),
+        }],
+    });
+}
+
+function cetakDataSarpras() {
+    const filter = $("#cari-sarpras").value.trim().toLowerCase();
+    const kategori = $("#filter-kategori-sarpras").value;
+    const data = state.saranaList.filter((s) =>
+        (!kategori || s.kategori === kategori) &&
+        (!filter || [s.nama, s.kode, s.kategori].some((v) => (v || "").toLowerCase().includes(filter)))
+    );
+    const keterangan = [
+        kategori ? "Kategori: " + kategori : null,
+        filter ? `Pencarian: "${filter}"` : null,
+        data.length + " item",
+    ].filter(Boolean).join(" • ");
+    cetakTabelData({
+        judul: "DATA SARANA PRASARANA",
+        subjudul: keterangan,
+        bagian: [{
+            kolom: ["No", "Kategori", "Nama", "Kode / No. Inventaris", "Jumlah", "Kondisi",
+                "Luas (m²)", "Tahun", "Sumber Dana", "Keterangan"],
+            baris: data.map((s, i) => [
+                i + 1,
+                s.kategori,
+                s.nama,
+                s.kode || "-",
+                s.jumlah ?? "-",
+                s.kondisi || "-",
+                s.luas != null ? Number(s.luas).toLocaleString("id-ID") : "-",
+                s.tahunPengadaan ?? "-",
+                s.sumberDana || "-",
+                s.keterangan || "-",
+            ]),
+        }],
+    });
+}
+
+function cetakDataPegawai() {
+    const filter = $("#cari").value.trim().toLowerCase();
+    const data = state.pegawaiList.filter(
+        (p) => !filter || (p.nama || "").toLowerCase().includes(filter)
+    );
+    cetakTabelData({
+        judul: "DATA GURU & TENAGA KEPENDIDIKAN",
+        subjudul: (filter ? `Pencarian: "${filter}" — ` : "") + `${data.length} pegawai`,
+        bagian: [{
+            kolom: ["No", "Nama", "NIP", "Jabatan", "Status", "Mapel", "Pendidikan",
+                "Tgl. Lahir", "Telepon", "Email"],
+            baris: data.map((p, i) => [
+                i + 1,
+                p.nama,
+                p.nip || "-",
+                p.jabatan || "-",
+                p.statusKepegawaian || "-",
+                p.mataPelajaran || "-",
+                p.pendidikanTerakhir || "-",
+                p.tanggalLahir ? tglIndo(p.tanggalLahir) : "-",
+                p.telepon || "-",
+                p.email || "-",
+            ]),
+        }],
+    });
+}
+
+function cetakDataKesiswaan() {
+    const filter = $("#cari-kesiswaan").value.trim().toLowerCase();
+    const data = state.kesiswaanList.filter(
+        (k) => !filter || [k.namaSiswa, k.judul, k.jenis, k.kelas]
+            .some((v) => (v || "").toLowerCase().includes(filter))
+    );
+    cetakTabelData({
+        judul: "CATATAN KESISWAAN",
+        subjudul: (filter ? `Pencarian: "${filter}" — ` : "") + `${data.length} catatan`,
+        landscape: false,
+        bagian: [{
+            kolom: ["No", "Tanggal", "Jenis", "Nama Siswa", "Kelas", "Judul / Kegiatan", "Tingkat", "Poin"],
+            baris: data.map((k, i) => [
+                i + 1,
+                k.tanggal ? tglIndo(k.tanggal) : "-",
+                k.jenis || "-",
+                k.namaSiswa || "-",
+                k.kelas || "-",
+                k.judul || "-",
+                k.tingkat || "-",
+                k.poin ?? "-",
+            ]),
+        }],
+    });
+}
+
+function cetakRekapSurat() {
+    const tahun = $("#rekap-tahun").value || String(new Date().getFullYear());
+    const sm = state.surat.MASUK.filter((s) => s.tanggalSurat?.startsWith(tahun));
+    const sk = state.surat.KELUAR.filter((s) => s.tanggalSurat?.startsWith(tahun));
+
+    const perKlas = (list) => {
+        const map = {};
+        list.forEach((s) => { const k = s.klasifikasi || "(tanpa kode)"; map[k] = (map[k] || 0) + 1; });
+        return Object.entries(map).sort((a, b) => b[1] - a[1])
+            .map(([k, n]) => [k, NAMA_KLASIFIKASI[k] || "-", n]);
+    };
+
+    const masukBulan = Array(12).fill(0);
+    const keluarBulan = Array(12).fill(0);
+    sm.forEach((s) => masukBulan[Number(s.tanggalSurat.slice(5, 7)) - 1]++);
+    sk.forEach((s) => keluarBulan[Number(s.tanggalSurat.slice(5, 7)) - 1]++);
+    const bulan = BULAN_ID.map((b, i) => [b, masukBulan[i], keluarBulan[i], masukBulan[i] + keluarBulan[i]]);
+    bulan.push(["Jumlah Tahun " + tahun, sm.length, sk.length, sm.length + sk.length]);
+
+    cetakTabelData({
+        judul: "REKAP PERSURATAN TAHUN " + tahun,
+        subjudul: `${sm.length} surat masuk • ${sk.length} surat keluar • ${sm.length + sk.length} total surat`,
+        bagian: [
+            {judul: "Rekap per Klasifikasi — Surat Masuk", kolom: ["Kode", "Klasifikasi", "Jumlah"], baris: perKlas(sm)},
+            {judul: "Rekap per Klasifikasi — Surat Keluar", kolom: ["Kode", "Klasifikasi", "Jumlah"], baris: perKlas(sk)},
+            {judul: "Rekap per Bulan", kolom: ["Bulan", "Surat Masuk", "Surat Keluar", "Jumlah"], baris: bulan},
+        ],
+    });
+}
+
+function cetakProfilSekolah() {
+    const p = state.profilSekolah || {};
+    const v = (x) => (x == null || x === "" ? "-" : x);
+    const bagian = [
+        {
+            judul: "Identitas Sekolah",
+            kolom: ["Uraian", "Keterangan"],
+            baris: [
+                ["Nama Sekolah", v(p.namaSekolah)],
+                ["NPSN", v(p.npsn)],
+                ["NSS", v(p.nss)],
+                ["Status Sekolah", v(p.statusSekolah)],
+                ["Bentuk Pendidikan", v(p.bentukPendidikan)],
+                ["Akreditasi", v(p.statusAkreditasi)],
+                ["Tahun Berdiri", v(p.tahunBerdiri)],
+                ["Kurikulum", v(p.kurikulum)],
+                ["Waktu Belajar", v(p.waktuBelajar)],
+            ],
+        },
+        {
+            judul: "Alamat & Kontak",
+            kolom: ["Uraian", "Keterangan"],
+            baris: [
+                ["Alamat", v(p.alamat)],
+                ["Kelurahan/Desa", v(p.kelurahan)],
+                ["Kecamatan", v(p.kecamatan)],
+                ["Kabupaten/Kota", v(p.kotaKabupaten)],
+                ["Provinsi", v(p.provinsi)],
+                ["Kode Pos", v(p.kodePos)],
+                ["Telepon", v(p.telepon)],
+                ["Email", v(p.email)],
+                ["Website", v(p.website)],
+            ],
+        },
+        {
+            judul: "Kepala Sekolah & Sarana",
+            kolom: ["Uraian", "Keterangan"],
+            baris: [
+                ["Nama Kepala Sekolah", v(p.namaKepalaSekolah)],
+                ["NIP Kepala Sekolah", v(p.nipKepalaSekolah)],
+                ["Luas Tanah (m²)", v(p.luasTanah)],
+                ["Luas Bangunan (m²)", v(p.luasBangunan)],
+                ["Daya Listrik (W)", v(p.dayaListrik)],
+                ["Sumber Listrik", v(p.sumberListrik)],
+                ["Akses Internet", v(p.aksesInternet)],
+                ["Kecepatan Internet", v(p.kecepatanInternet)],
+            ],
+        },
+        {
+            judul: "Visi & Misi",
+            kolom: ["Uraian", "Keterangan"],
+            baris: [
+                ["Visi", v(p.visi)],
+                ["Misi", v(p.misi)],
+            ],
+        },
+    ];
+    cetakTabelData({
+        judul: "PROFIL SEKOLAH",
+        subjudul: p.namaSekolah || "",
+        bagian,
+        landscape: false,
+        tandaTangan: false,
+    });
+}
+
+$("#btn-cetak-siswa").addEventListener("click", cetakDataSiswa);
+$("#btn-cetak-sarpras").addEventListener("click", cetakDataSarpras);
+$("#btn-cetak-pegawai").addEventListener("click", cetakDataPegawai);
+$("#btn-cetak-kesiswaan").addEventListener("click", cetakDataKesiswaan);
+$("#btn-cetak-rekap").addEventListener("click", cetakRekapSurat);
+$("#btn-cetak-profil").addEventListener("click", cetakProfilSekolah);
+
 /* ---------- rekap persuratan ---------- */
 const BULAN_ID = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"];

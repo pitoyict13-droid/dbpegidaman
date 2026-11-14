@@ -18,6 +18,7 @@ Sistem informasi data pokok sekolah **gaya Dapodik** (Data Pokok Pendidikan) ber
 - 📄 **Laporan daftar surat** — export **Excel** (buku agenda berkop) dan **Cetak / Simpan PDF** langsung dari browser
 - 🔔 **Notifikasi web "Disposisi Saya"** — pegawai yang didisposisikan melihat lonceng 🔔 di navbar (angka merah = jumlah yang perlu dikerjakan), diperbarui tiap 60 detik
 - 📈 **Rekap persuratan** — statistik per klasifikasi dan per bulan dengan filter tahun
+- 🖨 **Cetak data per bagian** — tombol **Cetak / PDF** di halaman **Peserta Didik**, **Sarana Prasarana**, **Guru & Tenaga Kependidikan**, **Kesiswaan**, **Rekap Persuratan**, dan **Profil Sekolah**. Hasil cetak memakai **kop dari Profil Sekolah** (fallback identitas bawaan), mengikuti **filter pencarian/kategori/tahun** yang aktif, dan siap disimpan sebagai PDF lewat dialog print browser (A4 landscape/portrait otomatis)
 - 🛡 **Peran pengguna** — `ADMIN` (kelola semua data & pengguna) dan `STAFF` (hanya melihat)
 - 📥 **Import Excel siswa, sarpras & persuratan** — unduh template `.xlsx` (sudah berisi sheet **Petunjuk**), isi data, lalu unggah. Import berjalan di latar belakang dengan **progress bar**, baris duplikat **dilewati & dilaporkan** (bukan ditimpa). Maks **8 MB / 1.000 baris** per file (Apache POI). Import pegawai tetap tersedia seperti sebelumnya.
 - 📱 Frontend responsif **Bootstrap 5** + PWA (bisa di-install di Android dari Chrome)
