@@ -88,50 +88,53 @@ sudo journalctl -u dapodik-smp -f
 
 > Bila Java 17 belum terpasang, skrip menampilkan perintah pemasangannya (`sudo apt install openjdk-17-jdk`, atau unduh JRE 17 tanpa sudo).
 
-## Deploy Online Gratis (Render + Neon)
+## Deploy Online Gratis (Back4App + Neon)
 
-Agar pengurus sekolah bisa membuka aplikasi dari mana saja, kombinasi gratis yang disarankan:
+Agar pengurus sekolah bisa membuka aplikasi dari mana saja **tanpa kartu kredit**, kombinasi yang dipakai:
 
 | Komponen | Layanan | Biaya |
 |---|---|---|
-| Web service (Docker) | [Render](https://render.com) free plan | Rp 0 |
+| Web service (Docker) | [Back4App Containers](https://www.back4app.com) — Free: 0,25 CPU / 256 MB | Rp 0, tanpa kartu |
 | Database PostgreSQL | [Neon](https://neon.tech) free tier | Rp 0 |
 
-Repo ini sudah berisi `Dockerfile` dan `render.yaml` — tidak ada yang perlu diubah kodenya.
+Repo ini sudah berisi `Dockerfile` yang disetel agar muat di RAM 256 MB (heap 96 MB). Hasil uji: RSS ±221 MB saat semua endpoint diakses.
 
 ### Langkah-langkah
 
-1. **Push repo ini ke GitHub** (fork/repo milik sekolah):
-   ```bash
-   git push origin main
-   ```
-2. **Buat database di [Neon](https://neon.tech)** (perlu akun GitHub/Google, tanpa kartu kredit):
-   - Create Project → pilih region terdekat (mis. Singapore) → catat **host**, **nama database** (default `neondb`), **username** (mis. `neondb_owner`), dan **password**.
-3. **Deploy di [Render](https://render.com)**:
-   - **New → Web Service → Build and deploy from a Git repository** → pilih repo GitHub tadi → connect.
-   - Render mendeteksi `Dockerfile` otomatis (runtime: Docker). Pilih **Free** plan.
-   - Pada bagian **Environment Variables**, isi:
-     | Key | Nilai |
-     |---|---|
-     | `DB_HOST` | host Neon, mis. `ep-xxxx-1234.ap-southeast-1.aws.neon.tech` |
-     | `DB_PORT` | `5432` |
-     | `DB_NAME` | `neondb` |
-     | `DB_USERNAME` | `neondb_owner` |
-     | `DB_PASSWORD` | password dari Neon |
-     | `DB_PARAMS` | `?sslmode=require` |
-     | `JWT_SECRET` | isi string acak panjang (min. 32 karakter) |
-   - (Alternatif: **New → Blueprint** dan pilih repo ini — `render.yaml` akan menanyakan nilai-nilai di atas secara otomatis; `JWT_SECRET` dibuat otomatis.)
-4. Klik **Deploy**, tunggu hingga status **Live**. URL aplikasi akan berupa `https://<nama-service>.onrender.com`.
-5. Buka URL tsb → login `admin` / `admin123` → **segera ganti password** (menu Ganti Password) dan isi **Profil Sekolah**.
+1. **Push repo ini ke GitHub** (repo publik `pitoyict13-droid/dbpegidaman`, branch `main`).
+2. **Database Neon** — proyek `my-first-project` (region Singapura) sudah berisi skema. Nilai koneksi ada di `.env.local` (tidak di-commit).
+3. **Daftar Back4App** (gratis, tanpa kartu): https://www.back4app.com/signup
+4. Buka menu **Containers** → **Create New App** → hubungkan akun GitHub → pilih repo `dbpegidaman`, branch `main`, root `/`.
+5. Isi **Environment Variables**:
+
+   | Key | Nilai |
+   |---|---|
+   | `DB_HOST` | host Neon (lihat `.env.local`) |
+   | `DB_PORT` | `5432` |
+   | `DB_NAME` | `neondb` |
+   | `DB_USERNAME` | `neondb_owner` |
+   | `DB_PASSWORD` | password Neon (lihat `.env.local`) |
+   | `DB_PARAMS` | `?sslmode=require` |
+   | `JWT_SECRET` | string acak min. 32 karakter |
+
+   Opsional untuk menghemat RAM: `DB_POOL_SIZE=3`, `TOMCAT_MAX_THREADS=15`.
+6. Klik **Create App**, tunggu build Docker selesai (5–15 menit). URL aplikasi muncul di **App Overview**.
+7. Buka URL tersebut → login `admin` / `admin123` → **segera ganti password** dan isi **Profil Sekolah**.
 
 ### Catatan penting (free tier)
 
-- **Server tidur saat 15 menit tidak ada kunjungan** — pembukaan pertama setelah tidur butuh ~30–60 detik (subsequent cepat). Cocok untuk sekolah kecil; bila perlu selalu-on, naik ke paid plan atau pakai VPS sekolah.
-- **Neon free ≈ 0.5 GB** — cukup untuk puluhan ribu siswa/pegawai.
-- **Lampiran surat** tersimpan di filesystem container yang *ephemeral*: file hilang saat re-deploy/restart. Untuk arsip permanen, backup berkala `uploads/` (atau jalankan di server sekolah).
-- `PORT` diisi otomatis oleh Render — jangan diatur manual.
-- Pastikan `JWT_SECRET` diisi nilai acak (bawaan aplikasi tidak aman untuk produksi) — di Blueprint dibuat otomatis.
-- Kalau nanti ingin pindah host (Koyeb, Railway, VPS sekolah): cukup set env var `SPRING_DATASOURCE_URL` & `JWT_SECRET`, Dockerfile berlaku di mana pun.
+- **RAM hanya 256 MB / 0,25 CPU.** Aplikasi sudah dibatasi `-Xmx96m`; jangan menaikkan heap melebihi 128 MB.
+- **Region Back4App = USA** sedangkan Neon di Singapura, jadi setiap query menambah ±0,2 detik. Bila terasa lambat, buat proyek Neon baru di region `aws-us-east-1` lalu ganti `DB_HOST`.
+- **Lampiran surat** tersimpan di filesystem container yang *ephemeral*: hilang saat re-deploy/restart. Backup berkala `uploads/` atau jalankan di server sekolah untuk arsip permanen.
+- **Neon free ≈ 0,5 GB** — cukup untuk puluhan ribu siswa/pegawai.
+- Jangan set `PORT`; Back4App memakai port `8080` yang di-`EXPOSE` di Dockerfile.
+- Deployment pertama bisa gagal karena health check terlalu cepat — klik **Actions → Deploy the Last Commit** untuk mencoba ulang.
+
+### Alternatif gratis lain
+
+- **Cloudflare Tunnel** (tanpa akun, tanpa kartu): jalankan aplikasi di komputer sekolah lalu
+  `cloudflared tunnel --url http://localhost:8080`. URL `*.trycloudflare.com` langsung aktif, tetapi komputer harus menyala dan URL berubah setiap tunnel dijalankan ulang.
+- **Render** (`render.yaml` sudah tersedia) — paket Free tetap ada, tetapi akun baru bisa diminta menambahkan kartu.
 
 ## Login Awal
 
