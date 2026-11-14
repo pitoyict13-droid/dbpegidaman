@@ -97,7 +97,7 @@ Agar pengurus sekolah bisa membuka aplikasi dari mana saja **tanpa kartu kredit*
 | Web service (Docker) | [Back4App Containers](https://www.back4app.com) — Free: 0,25 CPU / 256 MB | Rp 0, tanpa kartu |
 | Database PostgreSQL | [Neon](https://neon.tech) free tier | Rp 0 |
 
-Repo ini sudah berisi `Dockerfile` yang disetel agar muat di RAM 256 MB (heap 96 MB). Hasil uji: RSS ±221 MB saat semua endpoint diakses.
+Repo ini sudah berisi `Dockerfile` yang disetel agar muat di RAM 256 MB (heap 96 MB, code cache 32 MB). Hasil uji lokal: RSS ±210 MB saat diam dan ±253 MB saat import 1.000 baris — masih di bawah 256 MB (sebagian RSS adalah cache file JAR yang bisa dilepas sistem saat tertekan).
 
 ### Langkah-langkah
 
