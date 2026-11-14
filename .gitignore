@@ -17,3 +17,14 @@ hs_err_pid*
 
 # Database H2 lokal (jangan commit)
 data/
+
+# Kredensial Neon (jangan commit)
+.env.local
+.env*
+!.env.example
+
+# Node/Neon (jangan commit)
+node_modules/
+
+# Linker Neon lokal (jangan commit)
+.neon
