@@ -67,6 +67,27 @@ Aplikasi juga bisa dijalankan dengan database file H2 bawaan (data tersimpan di 
   -Dspring-boot.run.arguments=--spring.datasource.password=
 ```
 
+### Menjalankan di Linux (satu perintah)
+
+Skrip `jalankan-linux.sh` otomatis mencari **Java 17**, mengunduh driver H2 bila belum ada, lalu menjalankan aplikasi dengan database lokal H2 — tidak perlu memasang Maven/JDK secara manual.
+
+```bash
+./jalankan-linux.sh              # http://localhost:8080
+PORT=9090 ./jalankan-linux.sh    # ganti port
+```
+
+Hentikan dengan `Ctrl+C`. Untuk PostgreSQL/Neon, cukup set `SPRING_DATASOURCE_URL`, `DB_USERNAME`, dan `DB_PASSWORD` seperti biasa.
+
+Agar aplikasi otomatis hidup saat server Linux menyala (systemd):
+
+```bash
+./pasang-service-linux.sh        # minta password sudo sekali
+sudo systemctl status dapodik-smp
+sudo journalctl -u dapodik-smp -f
+```
+
+> Bila Java 17 belum terpasang, skrip menampilkan perintah pemasangannya (`sudo apt install openjdk-17-jdk`, atau unduh JRE 17 tanpa sudo).
+
 ## Deploy Online Gratis (Render + Neon)
 
 Agar pengurus sekolah bisa membuka aplikasi dari mana saja, kombinasi gratis yang disarankan:
