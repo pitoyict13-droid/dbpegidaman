@@ -5,6 +5,7 @@ services:
     name: dapodik-smp-unggulan-idaman
     runtime: docker
     plan: free
+    region: singapore      # dekat dengan database Neon (aws-ap-southeast-1)
     dockerfilePath: ./Dockerfile
     healthCheckPath: /manifest.json
     envVars:

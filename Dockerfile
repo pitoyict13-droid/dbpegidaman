@@ -21,4 +21,6 @@ ENV UPLOAD_DIR=/app/uploads
 
 EXPOSE 8080
 # Render/Koyeb menyuntikkan PORT sendiri; aplikasi membaca ${PORT:8080}
-CMD ["java", "-jar", "app.jar"]
+# preferIPv4Stack: Neon punya record IPv6; container tanpa rute IPv6 bisa gagal konek
+# bila Java mencoba alamat IPv6 lebih dulu.
+CMD ["java", "-Djava.net.preferIPv4Stack=true", "-jar", "app.jar"]
